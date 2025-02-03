@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_ecd1a50efe09395c63e918b6e1706a09 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+        
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/leaflet.markercluster.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.Default.css"/>
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_ecd1a50efe09395c63e918b6e1706a09" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_ecd1a50efe09395c63e918b6e1706a09 = L.map(
+                "map_ecd1a50efe09395c63e918b6e1706a09",
+                {
+                    center: [13.7563, 100.5018],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 12,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_6d607a1909fe46f9faa8aca25db46626 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_6d607a1909fe46f9faa8aca25db46626.addTo(map_ecd1a50efe09395c63e918b6e1706a09);
+        
+    
+            var marker_76a09fe07cbe60efd8f73afa35ecf4fa = L.marker(
+                [13.7563, 100.5018],
+                {
+}
+            ).addTo(map_ecd1a50efe09395c63e918b6e1706a09);
+        
+    
+            var icon_9a517f7854019fd5ac9076fb9c73351b = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+            marker_76a09fe07cbe60efd8f73afa35ecf4fa.setIcon(icon_9a517f7854019fd5ac9076fb9c73351b);
+        
+    
+        var popup_e217e8810f7a39deebabdee08387d519 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_ed76cf35a86710b2332a20e1d06cc98d = $(`<div id="html_ed76cf35a86710b2332a20e1d06cc98d" style="width: 100.0%; height: 100.0%;">Your Location</div>`)[0];
+                popup_e217e8810f7a39deebabdee08387d519.setContent(html_ed76cf35a86710b2332a20e1d06cc98d);
+            
+        
+
+        marker_76a09fe07cbe60efd8f73afa35ecf4fa.bindPopup(popup_e217e8810f7a39deebabdee08387d519)
+        ;
+
+        
+    
+    
+            var marker_cluster_262bbde5e5439f43f1b38291b756337f = L.markerClusterGroup(
+                {
+}
+            );
+        
+    
+            var marker_b7ff212d9c6b11141fddd2651efe0dcc = L.marker(
+                [13.7547, 100.501524],
+                {
+}
+            ).addTo(marker_cluster_262bbde5e5439f43f1b38291b756337f);
+        
+    
+            var icon_1c74b59979406f46fd3e6c825d845faa = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+            marker_b7ff212d9c6b11141fddd2651efe0dcc.setIcon(icon_1c74b59979406f46fd3e6c825d845faa);
+        
+    
+        var popup_a03ad68566c6a6ca4fb4b97ecab5a496 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_6ebf81eaadc8897939afbaf8ba126c3b = $(`<div id="html_6ebf81eaadc8897939afbaf8ba126c3b" style="width: 100.0%; height: 100.0%;">ร้านกาแฟต่าย</div>`)[0];
+                popup_a03ad68566c6a6ca4fb4b97ecab5a496.setContent(html_6ebf81eaadc8897939afbaf8ba126c3b);
+            
+        
+
+        marker_b7ff212d9c6b11141fddd2651efe0dcc.bindPopup(popup_a03ad68566c6a6ca4fb4b97ecab5a496)
+        ;
+
+        
+    
+    
+            var marker_fa23370bea3e40db5320ef4fa80a855f = L.marker(
+                [13.75230260345046, 100.50222292542458],
+                {
+}
+            ).addTo(marker_cluster_262bbde5e5439f43f1b38291b756337f);
+        
+    
+            var icon_8565d2dddde9fc545843e80011b4f9b3 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+            marker_fa23370bea3e40db5320ef4fa80a855f.setIcon(icon_8565d2dddde9fc545843e80011b4f9b3);
+        
+    
+        var popup_f5dd674393f6e65e38806679eb7da11a = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_4c33df4b8c23920f84526e851f83354e = $(`<div id="html_4c33df4b8c23920f84526e851f83354e" style="width: 100.0%; height: 100.0%;">ร้านกาแฟบุตรี</div>`)[0];
+                popup_f5dd674393f6e65e38806679eb7da11a.setContent(html_4c33df4b8c23920f84526e851f83354e);
+            
+        
+
+        marker_fa23370bea3e40db5320ef4fa80a855f.bindPopup(popup_f5dd674393f6e65e38806679eb7da11a)
+        ;
+
+        
+    
+    
+            var marker_2654b895a59b92f5733ad440e679365d = L.marker(
+                [13.760097, 100.498665],
+                {
+}
+            ).addTo(marker_cluster_262bbde5e5439f43f1b38291b756337f);
+        
+    
+            var icon_6e460495babf55a74ab407b50f6d47ac = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+            marker_2654b895a59b92f5733ad440e679365d.setIcon(icon_6e460495babf55a74ab407b50f6d47ac);
+        
+    
+        var popup_3fe54b5d38c941a92477f9d3212db836 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_3690599c9b6d4cbcbb557048d2f8fd5f = $(`<div id="html_3690599c9b6d4cbcbb557048d2f8fd5f" style="width: 100.0%; height: 100.0%;">ร้านกาแฟโบราณ</div>`)[0];
+                popup_3fe54b5d38c941a92477f9d3212db836.setContent(html_3690599c9b6d4cbcbb557048d2f8fd5f);
+            
+        
+
+        marker_2654b895a59b92f5733ad440e679365d.bindPopup(popup_3fe54b5d38c941a92477f9d3212db836)
+        ;
+
+        
+    
+    
+            var marker_ba53d65ca3c5e37b8a5f6e50cabb89e5 = L.marker(
+                [13.756473678538628, 100.50673842430115],
+                {
+}
+            ).addTo(marker_cluster_262bbde5e5439f43f1b38291b756337f);
+        
+    
+            var icon_6ca78b188077ea70d4a8c9df3450d6dc = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+            marker_ba53d65ca3c5e37b8a5f6e50cabb89e5.setIcon(icon_6ca78b188077ea70d4a8c9df3450d6dc);
+        
+    
+        var popup_46c8a0e326fd32438d5f88ede80e08b6 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_354c63a01c3a7e6dd92301e0f96efa5c = $(`<div id="html_354c63a01c3a7e6dd92301e0f96efa5c" style="width: 100.0%; height: 100.0%;">ร้านกาแฟ อีเดน</div>`)[0];
+                popup_46c8a0e326fd32438d5f88ede80e08b6.setContent(html_354c63a01c3a7e6dd92301e0f96efa5c);
+            
+        
+
+        marker_ba53d65ca3c5e37b8a5f6e50cabb89e5.bindPopup(popup_46c8a0e326fd32438d5f88ede80e08b6)
+        ;
+
+        
+    
+    
+            var marker_630ad339cd4fc793b29f8a8514c0c7bb = L.marker(
+                [13.760084555465209, 100.50713270902634],
+                {
+}
+            ).addTo(marker_cluster_262bbde5e5439f43f1b38291b756337f);
+        
+    
+            var icon_8cdd16ad3ab17149310187227d57cec0 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+            marker_630ad339cd4fc793b29f8a8514c0c7bb.setIcon(icon_8cdd16ad3ab17149310187227d57cec0);
+        
+    
+        var popup_dcddf63b6edf9102437e39353500392d = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_d9092d24802f16450c75da09e0acb033 = $(`<div id="html_d9092d24802f16450c75da09e0acb033" style="width: 100.0%; height: 100.0%;">ร้านกาแฟมวลชน สาขากระทรวงเกษตรและสหกรณ์  </div>`)[0];
+                popup_dcddf63b6edf9102437e39353500392d.setContent(html_d9092d24802f16450c75da09e0acb033);
+            
+        
+
+        marker_630ad339cd4fc793b29f8a8514c0c7bb.bindPopup(popup_dcddf63b6edf9102437e39353500392d)
+        ;
+
+        
+    
+    
+            var marker_849772cc609e9e4d212e658f887cf911 = L.marker(
+                [13.750862, 100.498117],
+                {
+}
+            ).addTo(marker_cluster_262bbde5e5439f43f1b38291b756337f);
+        
+    
+            var icon_a49faecf8cc0606f6b398d7f4f0f0238 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+            marker_849772cc609e9e4d212e658f887cf911.setIcon(icon_a49faecf8cc0606f6b398d7f4f0f0238);
+        
+    
+        var popup_a777d5d1198eda842a9e7a99ce1e2b2f = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_145ac229da09b729d9739cdf9ac3173f = $(`<div id="html_145ac229da09b729d9739cdf9ac3173f" style="width: 100.0%; height: 100.0%;">ร้านกาแฟซอย 1 หลังกระทรวงมหาดไทย</div>`)[0];
+                popup_a777d5d1198eda842a9e7a99ce1e2b2f.setContent(html_145ac229da09b729d9739cdf9ac3173f);
+            
+        
+
+        marker_849772cc609e9e4d212e658f887cf911.bindPopup(popup_a777d5d1198eda842a9e7a99ce1e2b2f)
+        ;
+
+        
+    
+    
+            var marker_a0dcfd4e0452202f133a18d032426764 = L.marker(
+                [13.748224, 100.497726],
+                {
+}
+            ).addTo(marker_cluster_262bbde5e5439f43f1b38291b756337f);
+        
+    
+            var icon_076dece98e781a3c926df1ca4252455f = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+            marker_a0dcfd4e0452202f133a18d032426764.setIcon(icon_076dece98e781a3c926df1ca4252455f);
+        
+    
+        var popup_c225d6750e368d66f9041ffe92f610e0 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_d0838b1119753f97941f4e07fa82e16d = $(`<div id="html_d0838b1119753f97941f4e07fa82e16d" style="width: 100.0%; height: 100.0%;">ร้านกาแฟจินดา</div>`)[0];
+                popup_c225d6750e368d66f9041ffe92f610e0.setContent(html_d0838b1119753f97941f4e07fa82e16d);
+            
+        
+
+        marker_a0dcfd4e0452202f133a18d032426764.bindPopup(popup_c225d6750e368d66f9041ffe92f610e0)
+        ;
+
+        
+    
+    
+            var marker_ebb861a25b308bf4647fbae604756b67 = L.marker(
+                [13.746952, 100.498887],
+                {
+}
+            ).addTo(marker_cluster_262bbde5e5439f43f1b38291b756337f);
+        
+    
+            var icon_d60d5126613eeb620bd4f70e3c2ea229 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+            marker_ebb861a25b308bf4647fbae604756b67.setIcon(icon_d60d5126613eeb620bd4f70e3c2ea229);
+        
+    
+        var popup_8d193f5afad9cbe75cbc1de69674c07a = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_76532ba8ff5c3bdd4e5cac0adbcda83e = $(`<div id="html_76532ba8ff5c3bdd4e5cac0adbcda83e" style="width: 100.0%; height: 100.0%;">ร้านกาแฟ (ทะลุ)</div>`)[0];
+                popup_8d193f5afad9cbe75cbc1de69674c07a.setContent(html_76532ba8ff5c3bdd4e5cac0adbcda83e);
+            
+        
+
+        marker_ebb861a25b308bf4647fbae604756b67.bindPopup(popup_8d193f5afad9cbe75cbc1de69674c07a)
+        ;
+
+        
+    
+    
+            var marker_c83eb2ce41ef1818390d78b01d8660c3 = L.marker(
+                [13.762265122985939, 100.49387723207474],
+                {
+}
+            ).addTo(marker_cluster_262bbde5e5439f43f1b38291b756337f);
+        
+    
+            var icon_d45fe07f6d4a79940e78d713e051e71e = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+            marker_c83eb2ce41ef1818390d78b01d8660c3.setIcon(icon_d45fe07f6d4a79940e78d713e051e71e);
+        
+    
+        var popup_cb864949de4f98153c16af04bdee951d = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_225075468a29b8777548fdd1c99b01ef = $(`<div id="html_225075468a29b8777548fdd1c99b01ef" style="width: 100.0%; height: 100.0%;">ร้านกาแฟบรรเจิด (ถนนพระอาทิตย์)</div>`)[0];
+                popup_cb864949de4f98153c16af04bdee951d.setContent(html_225075468a29b8777548fdd1c99b01ef);
+            
+        
+
+        marker_c83eb2ce41ef1818390d78b01d8660c3.bindPopup(popup_cb864949de4f98153c16af04bdee951d)
+        ;
+
+        
+    
+    
+            var marker_407a5fca27bb38132b4cdd3dee582088 = L.marker(
+                [13.762190874605317, 100.49381285905838],
+                {
+}
+            ).addTo(marker_cluster_262bbde5e5439f43f1b38291b756337f);
+        
+    
+            var icon_d7a0eea444a3d549988371d24e0e03ca = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+            marker_407a5fca27bb38132b4cdd3dee582088.setIcon(icon_d7a0eea444a3d549988371d24e0e03ca);
+        
+    
+        var popup_92f61539e17cdef09486f91dd281b509 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_414fd26a2dcaa046c63d376a3ca3f429 = $(`<div id="html_414fd26a2dcaa046c63d376a3ca3f429" style="width: 100.0%; height: 100.0%;">ร้านกาแฟแบล็คแค็พคาเฟ่</div>`)[0];
+                popup_92f61539e17cdef09486f91dd281b509.setContent(html_414fd26a2dcaa046c63d376a3ca3f429);
+            
+        
+
+        marker_407a5fca27bb38132b4cdd3dee582088.bindPopup(popup_92f61539e17cdef09486f91dd281b509)
+        ;
+
+        
+    
+    
+            var marker_4ddd139b279693a751248b0ff8511a04 = L.marker(
+                [13.7666240025342, 100.501856764037],
+                {
+}
+            ).addTo(marker_cluster_262bbde5e5439f43f1b38291b756337f);
+        
+    
+            var icon_30ee4f1f9c2355270902de55bd3fd446 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+            marker_4ddd139b279693a751248b0ff8511a04.setIcon(icon_30ee4f1f9c2355270902de55bd3fd446);
+        
+    
+        var popup_1c0bfa0003ff0287139a61824d635bb0 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_2650031b062123157681f4abab60c0bc = $(`<div id="html_2650031b062123157681f4abab60c0bc" style="width: 100.0%; height: 100.0%;">ร้านกาแฟเกียฟคาเฟทีเรีย</div>`)[0];
+                popup_1c0bfa0003ff0287139a61824d635bb0.setContent(html_2650031b062123157681f4abab60c0bc);
+            
+        
+
+        marker_4ddd139b279693a751248b0ff8511a04.bindPopup(popup_1c0bfa0003ff0287139a61824d635bb0)
+        ;
+
+        
+    
+    
+            var marker_6eff0d21655ceb75c5487123dc237390 = L.marker(
+                [13.7524875789949, 100.490945563633],
+                {
+}
+            ).addTo(marker_cluster_262bbde5e5439f43f1b38291b756337f);
+        
+    
+            var icon_1991d2eb5454bbac3ca91649a32947c5 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+            marker_6eff0d21655ceb75c5487123dc237390.setIcon(icon_1991d2eb5454bbac3ca91649a32947c5);
+        
+    
+        var popup_10f87fb7ed4f4f755571a193582e5c8f = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_860ee6fe667328b71906a16aee045397 = $(`<div id="html_860ee6fe667328b71906a16aee045397" style="width: 100.0%; height: 100.0%;">ร้านกาแฟ ปาลาซโซ่</div>`)[0];
+                popup_10f87fb7ed4f4f755571a193582e5c8f.setContent(html_860ee6fe667328b71906a16aee045397);
+            
+        
+
+        marker_6eff0d21655ceb75c5487123dc237390.bindPopup(popup_10f87fb7ed4f4f755571a193582e5c8f)
+        ;
+
+        
+    
+    
+            var marker_6461fed941417414e143c9fecbbb44be = L.marker(
+                [13.747161, 100.509751],
+                {
+}
+            ).addTo(marker_cluster_262bbde5e5439f43f1b38291b756337f);
+        
+    
+            var icon_b321fd41c035f760bec56dc7e172e27c = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+            marker_6461fed941417414e143c9fecbbb44be.setIcon(icon_b321fd41c035f760bec56dc7e172e27c);
+        
+    
+        var popup_90257c462fcc237c2d6f6ced13a8c584 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_b4d2f4d4a5003ef17093b6ddca288cd9 = $(`<div id="html_b4d2f4d4a5003ef17093b6ddca288cd9" style="width: 100.0%; height: 100.0%;">ร้านกาแฟชาวดอย</div>`)[0];
+                popup_90257c462fcc237c2d6f6ced13a8c584.setContent(html_b4d2f4d4a5003ef17093b6ddca288cd9);
+            
+        
+
+        marker_6461fed941417414e143c9fecbbb44be.bindPopup(popup_90257c462fcc237c2d6f6ced13a8c584)
+        ;
+
+        
+    
+    
+            var marker_e46013cdb3529c0a0b7f5420a7e3c4ca = L.marker(
+                [13.764584, 100.51153],
+                {
+}
+            ).addTo(marker_cluster_262bbde5e5439f43f1b38291b756337f);
+        
+    
+            var icon_4ef8e28538651289eeba24cf6b636b05 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+            marker_e46013cdb3529c0a0b7f5420a7e3c4ca.setIcon(icon_4ef8e28538651289eeba24cf6b636b05);
+        
+    
+        var popup_c15bc3699d476a078859170657fd4a2a = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_d26108e258e5e2dceeb5d71f651c4bfd = $(`<div id="html_d26108e258e5e2dceeb5d71f651c4bfd" style="width: 100.0%; height: 100.0%;">ร้านกาแฟน่าน</div>`)[0];
+                popup_c15bc3699d476a078859170657fd4a2a.setContent(html_d26108e258e5e2dceeb5d71f651c4bfd);
+            
+        
+
+        marker_e46013cdb3529c0a0b7f5420a7e3c4ca.bindPopup(popup_c15bc3699d476a078859170657fd4a2a)
+        ;
+
+        
+    
+    
+            var marker_f825ed994de5f26b6cce1c8d6aabed0a = L.marker(
+                [13.755593, 100.489008],
+                {
+}
+            ).addTo(marker_cluster_262bbde5e5439f43f1b38291b756337f);
+        
+    
+            var icon_91b372e663ac4ef3b7056d23e999179f = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+            marker_f825ed994de5f26b6cce1c8d6aabed0a.setIcon(icon_91b372e663ac4ef3b7056d23e999179f);
+        
+    
+        var popup_2aea3a3f6812e746817d12c20e2daf9c = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_fe86ea2a9b046b0d9cb859ba3544b1a4 = $(`<div id="html_fe86ea2a9b046b0d9cb859ba3544b1a4" style="width: 100.0%; height: 100.0%;">ร้านกาแฟโบราณและข้าวแกงโบราณเจ๊พันและเจ๊หรั่งอร่อยมากครับรับประกันเชิญแวะชิมครับ</div>`)[0];
+                popup_2aea3a3f6812e746817d12c20e2daf9c.setContent(html_fe86ea2a9b046b0d9cb859ba3544b1a4);
+            
+        
+
+        marker_f825ed994de5f26b6cce1c8d6aabed0a.bindPopup(popup_2aea3a3f6812e746817d12c20e2daf9c)
+        ;
+
+        
+    
+    
+            var marker_315a42acbd58e57e0de3c9937ade44a9 = L.marker(
+                [13.768829, 100.504523],
+                {
+}
+            ).addTo(marker_cluster_262bbde5e5439f43f1b38291b756337f);
+        
+    
+            var icon_a4913cb9f52e11132a46e81e61b9fe4c = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+            marker_315a42acbd58e57e0de3c9937ade44a9.setIcon(icon_a4913cb9f52e11132a46e81e61b9fe4c);
+        
+    
+        var popup_3a4da5d0895a138f9100feeaa81f1cca = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_fd589adff854361fbf383496a7c87350 = $(`<div id="html_fd589adff854361fbf383496a7c87350" style="width: 100.0%; height: 100.0%;">ร้านกาแฟวันคัด-สาขาเทเวศน์</div>`)[0];
+                popup_3a4da5d0895a138f9100feeaa81f1cca.setContent(html_fd589adff854361fbf383496a7c87350);
+            
+        
+
+        marker_315a42acbd58e57e0de3c9937ade44a9.bindPopup(popup_3a4da5d0895a138f9100feeaa81f1cca)
+        ;
+
+        
+    
+    
+            var marker_97d5cf30be8e7fbeffc6d8fbdde5999b = L.marker(
+                [13.75605, 100.488792],
+                {
+}
+            ).addTo(marker_cluster_262bbde5e5439f43f1b38291b756337f);
+        
+    
+            var icon_b0421bc6e9d01c4037bdf424f95c82d6 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+            marker_97d5cf30be8e7fbeffc6d8fbdde5999b.setIcon(icon_b0421bc6e9d01c4037bdf424f95c82d6);
+        
+    
+        var popup_8792af39e2a2b0e73a9c2c28e88959c5 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_b15b3be0d4a4e8c984754ffc27c0c0b6 = $(`<div id="html_b15b3be0d4a4e8c984754ffc27c0c0b6" style="width: 100.0%; height: 100.0%;">ร้านกาแฟสดป๋าเนียง</div>`)[0];
+                popup_8792af39e2a2b0e73a9c2c28e88959c5.setContent(html_b15b3be0d4a4e8c984754ffc27c0c0b6);
+            
+        
+
+        marker_97d5cf30be8e7fbeffc6d8fbdde5999b.bindPopup(popup_8792af39e2a2b0e73a9c2c28e88959c5)
+        ;
+
+        
+    
+    
+            var marker_7ac6d437fd5b1e636fd8e410f898286f = L.marker(
+                [13.7443589354802, 100.507386664058],
+                {
+}
+            ).addTo(marker_cluster_262bbde5e5439f43f1b38291b756337f);
+        
+    
+            var icon_198d3aaf1ac81f59c2364d6db329c23b = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+            marker_7ac6d437fd5b1e636fd8e410f898286f.setIcon(icon_198d3aaf1ac81f59c2364d6db329c23b);
+        
+    
+        var popup_28695de7be78ef31d117a85625dee865 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_b1ce5c8f07322cac293ec23d023c131d = $(`<div id="html_b1ce5c8f07322cac293ec23d023c131d" style="width: 100.0%; height: 100.0%;">ร้านกาแฟขนมปังปิ้งตี๋หยก</div>`)[0];
+                popup_28695de7be78ef31d117a85625dee865.setContent(html_b1ce5c8f07322cac293ec23d023c131d);
+            
+        
+
+        marker_7ac6d437fd5b1e636fd8e410f898286f.bindPopup(popup_28695de7be78ef31d117a85625dee865)
+        ;
+
+        
+    
+    
+            var marker_6e68111d71c550ea1131000394ad65df = L.marker(
+                [13.757759, 100.486278],
+                {
+}
+            ).addTo(marker_cluster_262bbde5e5439f43f1b38291b756337f);
+        
+    
+            var icon_19af1152083728fa1958519c62df3dd5 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+            marker_6e68111d71c550ea1131000394ad65df.setIcon(icon_19af1152083728fa1958519c62df3dd5);
+        
+    
+        var popup_e1944c2edcf92e94a5104641b805d0a2 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_134c92a58e7a22426e4b879746d45db2 = $(`<div id="html_134c92a58e7a22426e4b879746d45db2" style="width: 100.0%; height: 100.0%;">ร้านกาแฟมวลชน</div>`)[0];
+                popup_e1944c2edcf92e94a5104641b805d0a2.setContent(html_134c92a58e7a22426e4b879746d45db2);
+            
+        
+
+        marker_6e68111d71c550ea1131000394ad65df.bindPopup(popup_e1944c2edcf92e94a5104641b805d0a2)
+        ;
+
+        
+    
+    
+            var marker_e70fb27699e48e2aa6347bba1b96babf = L.marker(
+                [13.759054184649923, 100.48545777797699],
+                {
+}
+            ).addTo(marker_cluster_262bbde5e5439f43f1b38291b756337f);
+        
+    
+            var icon_9838480f5e0b5ad5f3cb2d23d906de1a = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+            marker_e70fb27699e48e2aa6347bba1b96babf.setIcon(icon_9838480f5e0b5ad5f3cb2d23d906de1a);
+        
+    
+        var popup_025e57c1de001180036737f1b6c529f6 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_77f2c561c429f0d4145f889a206ddb53 = $(`<div id="html_77f2c561c429f0d4145f889a206ddb53" style="width: 100.0%; height: 100.0%;">ร้านกาแฟดิโอโร่ สาขา โรงพยาบาลศิริราชปิยมหาราชการุณย์</div>`)[0];
+                popup_025e57c1de001180036737f1b6c529f6.setContent(html_77f2c561c429f0d4145f889a206ddb53);
+            
+        
+
+        marker_e70fb27699e48e2aa6347bba1b96babf.bindPopup(popup_025e57c1de001180036737f1b6c529f6)
+        ;
+
+        
+    
+    
+            marker_cluster_262bbde5e5439f43f1b38291b756337f.addTo(map_ecd1a50efe09395c63e918b6e1706a09);
+        
+</script>
+</html>

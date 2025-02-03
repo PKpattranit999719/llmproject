@@ -1,3 +1,5 @@
 testenv/
 __pycache__/
 *.ipynb
+map_test.py
+test.py

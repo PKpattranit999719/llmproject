@@ -10,6 +10,7 @@ import folium
 from geopy.distance import geodesic
 from IPython.display import display
 import streamlit.components.v1 as components 
+import heapq
 
 # Define a model for keyword extraction
 class SearchKeyword(BaseModel):
@@ -65,7 +66,7 @@ def process_places_of_interest_routes(places_interest):
         chain = prompt | llm | parser
         event = chain.invoke({"places_of_interest": places_interest})
 
-        # print(f"Raw extracted event: {event}")  # เช็คค่าที่ได้จาก chain.invoke
+        print(f"Raw extracted event: {event}")  # เช็คค่าที่ได้จาก chain.invoke
         
         if event:
             keyword = event.get('keyword', '')
@@ -108,9 +109,9 @@ def get_route_data(flon, flat, tlon, tlat):
         response = requests.get(full_url)
         response.raise_for_status()
         route_data = response.json()
-        print(route_data)
-    
-        print(f"Route data received: {route_data}")  # เช็คค่าที่ได้จาก API
+        #print(route_data)
+        # print("                                                                                                            ")
+        # print(f"Route data received: {route_data}")  # เช็คค่าที่ได้จาก API
     
         return route_data
     except requests.exceptions.RequestException as e:
@@ -164,12 +165,12 @@ def get_places_from_route(route_data):
         for point in guide_points:
             name = point.get('name')
             
-            print(f"Processing point: {name}")  # ดูว่าได้ค่าจุดไหนมาบ้าง
+            #print(f"Processing point: {name}")  # ดูว่าได้ค่าจุดไหนมาบ้าง
             
             if name:
                 latitude, longitude = get_lat_lon_from_osm(name)
                 
-                print(f"Resolved coordinates for {name}: lat={latitude}, lon={longitude}")  # ตรวจสอบค่าที่ได้จาก OSM API
+                #print(f"Resolved coordinates for {name}: lat={latitude}, lon={longitude}")  # ตรวจสอบค่าที่ได้จาก OSM API
                 
                 if latitude and longitude:
                     places_with_coordinates.append({
@@ -178,10 +179,9 @@ def get_places_from_route(route_data):
                         "longitude": longitude
                     })
     else:
-        print("Route data is empty or has an invalid structure.")
-    
+        return None 
+   
     return places_with_coordinates
-
 
 def search_interest_logdo_map_api(keyword, location, radius):
     try:
@@ -202,7 +202,7 @@ def search_interest_logdo_map_api(keyword, location, radius):
         print(f"Error fetching data from Longdo API: {e}")
     return None
 
-def search_places_of_interest(flon, flat, tlon, tlat, keyword, radius):
+def search_places_of_interest(route_data, keyword, radius):
     """
     Get route data and search for places of interest along the route.
 
@@ -217,8 +217,7 @@ def search_places_of_interest(flon, flat, tlon, tlat, keyword, radius):
     Returns:
         list: A list containing places of interest along the route.
     """
-    route_data = get_route_data(flon, flat, tlon, tlat)
-    
+        
     # print(f"Fetched route data: {route_data}")  # ตรวจสอบข้อมูลที่ได้จาก API
     
     if not route_data:
@@ -237,11 +236,10 @@ def search_places_of_interest(flon, flat, tlon, tlat, keyword, radius):
         
         found_places = search_interest_logdo_map_api(keyword, (latitude, longitude), radius)
      
-        # print(f"📍 Found places at ({latitude}, {longitude}):", found_places)  # Debug
+        #print(f"📍 Found places at ({latitude}, {longitude}):", found_places)  # Debug
         places_of_interest.append(found_places)
     
     return places_of_interest
-
 ################################ ค่าในฟังชั่นด้านบนก็มีค่าหมดนะได้ทำการ print เช็คค่าแล้ว #########################################33
 # ใช้ในการเรียงตำแหน่งของเส้นทาง เราจะไปเรียกใช่ใน main  เดี๋ยวต้องไปทำการเขียนการเรียกใช้ใหม่ เดี๋ยวจะลบออก
 def sort_points(points, user_location, user_destination):
@@ -299,15 +297,13 @@ def sort_points(points, user_location, user_destination):
     # print(f"****Sorted points: {[p['place_name'] for p in sorted_points]}")  # Debugging
     return sorted_points[1:]  # ตัดจุดเริ่มต้นออกจากผลลัพธ์
 
-
-# เรื่องทำการแสดงแผนที่ แบ่งเป็นการแสดงเส้นทาง และ การแสดงสถานที่ที่น่าสนใจ
-def create_map(route_data, places_of_interest, start_location, end_location, places_with_coordinates):
+def create_map(route_data, extracted_data, start_location, end_location, places_with_coordinates):
     """
     Create and display a map with route data and places of interest.
 
     Args:
         route_data (dict): Route information containing guide points.
-        places_of_interest (list): List of places containing additional information.
+        extracted_data (list): Extracted data of places containing place name, latitude, and longitude.
         start_location (tuple): Starting point (lat, lon).
         end_location (tuple): Ending point (lat, lon).
         places_with_coordinates (list): List of places with coordinates.
@@ -327,54 +323,60 @@ def create_map(route_data, places_of_interest, start_location, end_location, pla
     folium.Marker(
         location=start_location,
         popup="Start Location",
-        icon=folium.Icon(color="blue", icon="info-sign")
+        icon=folium.Icon(color="blue", icon="info-sign")  
     ).add_to(m)
 
     folium.Marker(
         location=end_location,
         popup="End Location",
-        icon=folium.Icon(color="red", icon="info-sign")
+        icon=folium.Icon(color="red", icon="info-sign")  
     ).add_to(m)
 
-    # Add markers for the places in places_with_coordinates
+    # Add markers for the places in places_with_coordinates (สีเขียว) และเชื่อมเส้น
     if places_with_coordinates:
+        route_coords = []  # เก็บพิกัดของเส้นทาง
+
         for idx, point in enumerate(places_with_coordinates):
             folium.Marker(
                 location=[point["latitude"], point["longitude"]],
                 popup=f"{idx + 1}: {point['place_name']}",
-                icon=folium.Icon(color="green", icon="info-sign")
+                icon=folium.Icon(color="green", icon="info-sign")  
             ).add_to(m)
+            route_coords.append([point["latitude"], point["longitude"]])  # เพิ่มพิกัดเข้าเส้นทาง
 
-        # Draw the route line connecting the points (from start to places and to the end)
-        route_coords = [[point["latitude"], point["longitude"]] for point in places_with_coordinates]
+        # วาดเส้นเชื่อมจุดจาก start → places_with_coordinates → end
         folium.PolyLine([start_location] + route_coords + [end_location], color="blue", weight=3, opacity=0.8).add_to(m)
 
-    # Extract places of interest and add them to the map
-    places_data = extract_and_return_data_from_places(places_of_interest)
+    # ตรวจสอบค่า extracted_data ที่จะใช้ในการเพิ่ม marker สถานที่ที่น่าสนใจ
+    #print(f"Extracted Data: {extracted_data}")
 
-    for data in places_data:
+    # Add markers for extracted_data (สถานที่น่าสนใจ) **เป็นสีส้ม**
+    for data in extracted_data:
         place_name = data.get('place_name', '')
-        place_lat = data.get('place_lat', '')  # Use 'place_lat' as it is stored in extracted data
-        place_lon = data.get('place_lon', '')  # Use 'place_lon' as it is stored in extracted data
+        place_lat = data.get('place_lat', '')  # ใช้ place_lat แทน latitude
+        place_lon = data.get('place_lon', '')  # ใช้ place_lon แทน longitude
 
-        # print(f"Adding place: {place_name}, Lat: {place_lat}, Lon: {place_lon}")  # Debugging
+        # ตรวจสอบข้อมูลที่ได้มา
+        print(f"Adding extracted place: {place_name}, Lat: {place_lat}, Lon: {place_lon}")
 
-        # Check if latitude and longitude are valid before adding marker
-        try:
-            place_lat = float(place_lat)
-            place_lon = float(place_lon)
-            folium.Marker(
-                location=[place_lat, place_lon],
-                popup=f"Place: {place_name}",
-                icon=folium.Icon(color='purple', icon='info-sign')
-            ).add_to(m)
-        except ValueError:
-            print(f"Skipping place {place_name} due to invalid coordinates.")
+        # ตรวจสอบค่าพิกัด latitude และ longitude ก่อนที่จะเพิ่ม marker
+        if place_lat and place_lon:  # ตรวจสอบว่าไม่เป็น None หรือ empty
+            try:
+                place_lat = float(place_lat)
+                place_lon = float(place_lon)
+                folium.Marker(
+                    location=[place_lat, place_lon],
+                    popup=f"Place: {place_name}",
+                    icon=folium.Icon(color="orange", icon='info-sign')  # สีส้ม
+                ).add_to(m)
+            except ValueError:
+                print(f"Skipping extracted place {place_name} due to invalid coordinates.")
+        else:
+            print(f"Skipping place {place_name} due to missing coordinates.")
 
-    map_html = m._repr_html_()  # Get the HTML representation of the map
-    st.components.v1.html(map_html, height=600)  # Display the map in Streamlit
-            # Display the map
-    # display(m)
+    # แสดงแผนที่ใน Streamlit
+    map_html = m._repr_html_()
+    st.components.v1.html(map_html, height=600)
 
 # เนื่องจากรูปแบบของข้อมูลใน ฟังขั่น search_places_of_interest ไม่ตรงกับรูปแบบในการวิเคราะห์แผนที่เลยต้องมาปรับรูปแบบกันก่อน
 def extract_and_return_data_from_places(places_of_interest):
@@ -387,7 +389,7 @@ def extract_and_return_data_from_places(places_of_interest):
     """
     extracted_data = []
  
-    print("--------------------------------------------------------------------------------------")
+    # print("--------------------------------------------------------------------------------------")
     for place in places_of_interest:  # วนลูปใน places_of_interest
         data_list = place.get("data", [])  # ดึงค่า data ออกมา (เป็น list)
         
@@ -401,34 +403,8 @@ def extract_and_return_data_from_places(places_of_interest):
                 'place_lat': place_lat,
                 'place_lon': place_lon,
             })
-
-    # print(extracted_data)  # ตรวจสอบผลลัพธ์
-    print("--------------------------------------------------------------------------------------")
-        # ตรวจสอบข้อมูลย่อยที่อาจจะมี
-        # places_data = place.get('places', {}).get('data', [])
-        # if places_data:
-        #     for data in places_data:
-        #         data_name = data.get('name', 'Unknown')
-        #         data_lat = data.get('lat', 'Unknown')
-        #         data_lon = data.get('lon', 'Unknown')
-
-        #         # เก็บข้อมูลสถานที่ที่ดึงมา
-        #         extracted_data.append({
-        #             'place_name': place_name,
-        #             'place_lat': place_lat,
-        #             'place_lon': place_lon,
-        #             'name': data_name,
-        #             'lat': data_lat,
-        #             'lon': data_lon
-        #         })
-        # else:
-        #     # ถ้าไม่มีข้อมูลย่อยก็เพิ่มสถานที่หลัก
-        #     extracted_data.append({
-        #         'place_name': place_name,
-        #         'place_lat': place_lat,
-        #         'place_lon': place_lon
-        #     })
-
+    # print("Places of Interest ",extracted_data)  # ตรวจสอบผลลัพธ์
+    # print("--------------------------------------------------------------------------------------")
     return extracted_data
 
 # ทำการวิเคราะห์สถานที่  ข้อมูลไม่เข้าฟังชั่นนี้
@@ -495,53 +471,102 @@ def extract_and_return_data_from_places(places_of_interest):
     
 #     return analyzed_data
 
-def calculate_distance(lat1, lon1, lat2, lon2):
+# def calculate_distance(lat1, lon1, lat2, lon2):
+#     """
+#     คำนวณระยะทางระหว่างสองพิกัด (หน่วย: กิโลเมตร).
+#     """
+#     return geodesic((lat1, lon1), (lat2, lon2)).kilometers
+
+# def get_nearest_places(places_with_coordinates, places_of_interest, top_n=5):
+#     """
+#     เลือกสถานที่ที่ใกล้ที่สุดจาก Places of Interest สำหรับแต่ละจุดในเส้นทาง
+
+#     Args:
+#         places_with_coordinates (list): รายการจุดในเส้นทาง (dict) {name, latitude, longitude}
+#         places_of_interest (list): รายการสถานที่ที่ค้นพบ (dict) {place_name, place_lat, place_lon}
+#         top_n (int): จำนวนสถานที่ที่ต้องการเลือกในแต่ละจุดในเส้นทาง
+
+#     Returns:
+#         list: รายชื่อสถานที่ที่ใกล้ที่สุด (list of dicts)
+#     """
+#     nearest_places = []
+
+#     for route_point in places_with_coordinates:  # เปลี่ยนจาก places_in_route เป็น places_with_coordinates
+#         lat1, lon1 = route_point["latitude"], route_point["longitude"]
+#         nearby_places = []
+
+#         for place in places_of_interest:
+#             lat2, lon2 = place["latitude"], place["longitude"]  # เปลี่ยนจาก place_lat, place_lon เป็น latitude, longitude
+#             distance = calculate_distance(lat1, lon1, lat2, lon2)
+
+
+#             # เก็บเฉพาะสถานที่ที่อยู่ในรัศมี 10 กม.
+#             if distance <= 10:
+#                 nearby_places.append({
+#                     "name": place["place_name"],
+#                     "latitude": lat2,
+#                     "longitude": lon2,
+#                     "distance": distance
+#                 })
+
+#         # เลือกสถานที่ที่ใกล้ที่สุด TOP_N แห่ง
+#         top_places = heapq.nsmallest(top_n, nearby_places, key=lambda x: x["distance"])
+#         nearest_places.extend(top_places)
+
+#     return nearest_places
+
+def recommend_places(places_with_coordinates, places_of_interest, keyword):
     """
-    Calculate the distance between two coordinates (in kilometers).
+    ใช้ LLM วิเคราะห์และแนะนำสถานที่ โดยไม่ต้องคำนวณระยะทาง
+
     Args:
-        lat1, lon1 (float): Coordinates of the starting point.
-        lat2, lon2 (float): Coordinates of the destination point.
-    Returns:
-        float: The distance between the two points in kilometers.
-    """
-    return geodesic((lat1, lon1), (lat2, lon2)).kilometers
-
-def recommend_places(places_of_interest, keyword, radius):
-    """
-    Use LLM to recommend places based on analyzed data.
-
-    Args:
-        places_of_interest: The places for after searching.
-        keyword (str): The keyword used for searching.
-        radius (int): Radius in kilometers to search for places around each point.
+        places_with_coordinates (list): เก็บชื่อสถานที่และละติจูด และ ลองจิจูดเป็นจุดในเส้นทาง
+        places_of_interest (list): สถานที่ที่พบ
+        keyword (str): คำค้นหา
 
     Returns:
-        str: LLM response with recommendations.
+        str: คำแนะนำจาก LLM
     """
-    if not places_of_interest:
-        return "ไม่มีสถานที่ที่พบตามคำค้นหา."
-    
-    # Generate the information string for LLM prompt
-    places_info = "\n".join([f"{index+1}. {place.get['name']} (ระยะห่าง: {place.get('distance', 'N/A'):.2f} กม.) - [ดูเพิ่มเติม](https://www.wongnai.com/search?query={place['name']})" for index, place in enumerate(places_of_interest)])
-
+    # จัดรูปแบบข้อมูลส่งให้ LLM โดยส่งข้อมูลทั้งหมดของ places_of_interest
+    places_info = "\n".join([f"{index+1}. {place.get('name', 'Unknown')} (Lat: {place.get('lat', 'N/A')}, Lon: {place.get('lon', 'N/A')})"
+                            for index, place in enumerate(places_of_interest)])
     prompt = f"""
     คำค้นหาของผู้ใช้: "{keyword}"
-    ต่อไปนี้คือสถานที่ที่พบจากคำค้นหา:
+    
+    ต่อไปนี้คือสถานที่ที่พบในบริเวณรอบๆ เส้นทางที่คุณกำลังเดินทาง:
     {places_info}
 
-    กรุณาแนะนำสถานที่ที่ดีที่สุดจากรายการนี้ โดยพิจารณาจากความน่าสนใจ, ความสะดวกในการเข้าถึง, และประเภทของสถานที่, ลักษณะการเดินทาง มีที่จอดรถหรือป่าว, รสชาติอาหารอร่อยหรือป่าว, เหมาะกับเด็กหรือผู้สูงอายุมั้ย.
-    โปรดให้ข้อมูลเพิ่มเติมว่าแนะนำจากการวิเคราะห์ใด.
+    กรุณาแนะนำ 5 สถานที่ที่ดีที่สุดจากรายการนี้ โดยพิจารณาจาก:
+    - ความสะดวกในการเข้าถึง
+    - ประเภทของสถานที่ (ร้านอาหาร, คาเฟ่, จุดท่องเที่ยว ฯลฯ)
+    - ลักษณะการเดินทาง (เดิน, ขับรถ, มีที่จอดรถ)
+    - ความนิยมของสถานที่
+    - ความเหมาะสมสำหรับเด็กหรือผู้สูงอายุ
+
+    โปรดอธิบายเหตุผลว่าทำไมคุณถึงเลือกสถานที่แนะนำ.
     """
 
     try:
-        # Send the prompt to LLM for recommendation
+        # ส่งคำขอไปยัง LLM
         response = llm.invoke(prompt)
-        return response.content.strip()
+
+        # ตรวจสอบว่ามีค่า response หรือไม่
+        if not response:
+            print("No response received from LLM.")
+        
+        # ตรวจสอบว่า response มีเนื้อหาหรือไม่
+        if response and hasattr(response, 'content'):
+            print("LLM Response:", response.content)  # แสดงค่าใน console
+            return response.content.strip()  # คืนค่าเนื้อหา
+        else:
+            print("No content found in response.")
+            return "ไม่สามารถให้คำแนะนำได้."
+    
     except Exception as e:
+        # จับข้อผิดพลาดที่เกิดขึ้นจากการเรียกใช้ LLM
         print(f"Error generating recommendation: {e}")
         return "เกิดข้อผิดพลาดในการให้คำแนะนำ."
 
-   
 def explain_route_with_llm(route_data):
     # ตรวจสอบว่าข้อมูลไม่เป็น None และมีโครงสร้างที่ถูกต้อง
     if not route_data or 'data' not in route_data or not route_data['data']:
@@ -553,6 +578,7 @@ def explain_route_with_llm(route_data):
 
     route_steps = []
     for instruction in first_route['guide']:
+        
         turn = instruction.get('turn', 'ไม่ระบุ')
         name = instruction.get('name', 'ไม่ระบุ')
         distance = instruction.get('distance', 'ไม่ระบุ')
@@ -562,7 +588,7 @@ def explain_route_with_llm(route_data):
 
     route_description = "\n".join(route_steps)
 
-    # print(f"✅ Route description generated:\n{route_description}")  # ตรวจสอบก่อนส่งให้ LLM
+    print(f"✅ Route description generated:\n{route_description}")  # ตรวจสอบก่อนส่งให้ LLM
 
     prompt = f"""
     นี่คือคำแนะนำการเดินทาง:
@@ -584,45 +610,3 @@ def explain_route_with_llm(route_data):
 # ฟังก์ชันการแสดงคำอธิบายการเดินทาง
 def display_route_explanation(route_data):
     explanation = explain_route_with_llm(route_data)
-  
-
-# #### ต้องเขียนลำดับการเรียกการทำงาน ใน main ในส่วนนี้ ######
-# ตัวอย่างข้อมูลจากการเรียกใช้ API
-# places_interest = "อยากกินข้าว"
-# user_location = (13.7563, 100.5018)  # จุดเริ่มต้น กรุงเทพฯ
-# user_destination = (14.022788, 99.978337)  # จุดสิ้นสุด กาญจนบุรี
-# radius = 5  # รัศมีการค้นหาสถานที่ 5 กิโลเมตร
-
-# keyword = process_places_of_interest_routes(places_interest)  # ฟังก์ชันที่ใช้ในการแยก keyword จาก query
-# if keyword:
-#     print(f"Extracted Keyword: {keyword}")
-
-#     route_points = [
-#             (float(places_of_interest['latitude']), float(places_of_interest['longitude']))
-#             for route in search_places_of_interest
-#         ]
-
-#         # Sort the points based on their proximity to each other starting from the user's location
-#     sorted_route_points = sort_points(route_points, user_location)
-
-
-# # เรียกใช้ฟังก์ชันเพื่อดึงข้อมูลเส้นทางและสถานที่น่าสนใจ
-# flon, flat, tlon, tlat = convert_locations(user_location, user_destination)  # ฟังก์ชันที่ใช้แปลงค่าพิกัด
-
-# print("\n--- Searching places along the route ---")
-# route_data, places_of_interest = get_places_from_route(flon, flat, tlon, tlat, keyword, radius)
-# if places_of_interest:
-#     analyzed_places = extract_and_analyze_data(places_of_interest)
-# else:
-#     print("No places of interest found.")
-# # สร้างแผนที่
-# create_map(route_data, places_of_interest, user_location, user_destination, sorted_route_points)
-
-
-# print("\n--- LLM Recommendations ---")
-# recommendations = recommend_places(places_of_interest, keyword, top_n=10)
-# print(recommendations)
-
-# explanation = explain_route_with_llm(route_data)  
-# # แสดงคำอธิบายการเดินทาง
-# display_route_explanation(explanation)

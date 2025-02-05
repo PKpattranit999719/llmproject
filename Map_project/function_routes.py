@@ -11,6 +11,7 @@ from geopy.distance import geodesic
 from IPython.display import display
 import streamlit.components.v1 as components 
 import heapq
+import json
 
 # Define a model for keyword extraction
 class SearchKeyword(BaseModel):
@@ -109,7 +110,7 @@ def get_route_data(flon, flat, tlon, tlat):
         response = requests.get(full_url)
         response.raise_for_status()
         route_data = response.json()
-        #print(route_data)
+        print(route_data)
         # print("                                                                                                            ")
         # print(f"Route data received: {route_data}")  # เช็คค่าที่ได้จาก API
     
@@ -117,6 +118,32 @@ def get_route_data(flon, flat, tlon, tlat):
     except requests.exceptions.RequestException as e:
         print(f"Error fetching route data: {e}")
     return None
+
+# เราจะเอาค่าของ get_route_data มาทำการวนลูปหาเส้นทาง
+def get_route_path_from_id(id):
+    route_path_list = []
+    try:
+        
+        print(id)
+        base_url = f"https://api.longdo.com/RouteService/json/route/path?id={id}"
+
+        response = requests.get(base_url)
+        response.raise_for_status()
+        route_path_data = response.json()
+
+        # แสดงข้อมูลเส้นทางที่ได้
+        print("Route Path Data:", route_path_data)
+
+        # เก็บข้อมูลเส้นทางใน route_path_list
+        if route_path_data:
+            route_path_list.append(route_path_data)
+        print("---------------------------------------------------")
+        print(route_path_list)
+        print("--------------------------------------------------")
+        return route_path_list
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching route path data: {e}")
+    return route_path_list
 
 def get_lat_lon_from_osm(searched_location):
     """
@@ -377,6 +404,121 @@ def create_map(route_data, extracted_data, start_location, end_location, places_
     # แสดงแผนที่ใน Streamlit
     map_html = m._repr_html_()
     st.components.v1.html(map_html, height=600)
+
+# def create_map(route_data, extracted_data, start_location, end_location, places_with_coordinates):
+#     """
+#     แสดงแผนที่ Longdo Map พร้อมเส้นทางและจุดที่น่าสนใจ
+    
+#     Args:
+#         route_data (dict): ข้อมูลเส้นทาง
+#         extracted_data (list): ข้อมูลสถานที่ที่ดึงมา
+#         start_location (tuple): พิกัดเริ่มต้น (lat, lon)
+#         end_location (tuple): พิกัดปลายทาง (lat, lon)
+#         places_with_coordinates (list): รายการสถานที่พร้อมพิกัด
+#     """
+    
+#     # 🔹 แปลงข้อมูลให้เป็น JSON สำหรับ JavaScript
+#     route_markers = [{"lon": start_location[1], "lat": start_location[0], "title": "จุดเริ่มต้น"}]
+#     route_markers.extend([{"lon": place["longitude"], "lat": place["latitude"], "title": place["place_name"]} for place in places_with_coordinates])
+#     route_markers.append({"lon": end_location[1], "lat": end_location[0], "title": "จุดปลายทาง"})
+    
+#     poi_markers = [{"lon": float(data["place_lon"]), "lat": float(data["place_lat"]), "title": data["place_name"]} for data in extracted_data if data["place_lat"] and data["place_lon"]]
+
+#     route_markers_js = json.dumps(route_markers, ensure_ascii=False)
+#     poi_markers_js = json.dumps(poi_markers, ensure_ascii=False)
+
+#     # 🔹 HTML + JavaScript สำหรับ Longdo Map
+#     html_code = f"""
+#     <!DOCTYPE HTML>
+#     <html>
+#         <head>
+#             <meta charset="UTF-8">
+#             <title>Longdo Map Route</title>
+#             <style>
+#                 html, body {{ height: 100%; margin: 0; }}
+#                 #map {{ height: 100%; width: 100%; }}
+#             </style>
+#             <script src="https://api.longdo.com/map/?key=YOUR_LONGDO_API_KEY"></script>
+#         </head>
+#         <body>
+#             <div id="map"></div>
+#             <script>
+#                 function init() {{
+#                     var map = new longdo.Map({{
+#                         placeholder: document.getElementById('map')
+#                     }});
+
+#                     map.Route.mode(longdo.RouteMode.Cost);
+
+#                     var poiMarkers = {poi_markers_js};
+#                     var routeMarkers = {route_markers_js};
+
+#                     // 🔹 วางหมุดสถานที่น่าสนใจ (POI) -> สีส้ม
+#                     for (var i = 0; i < poiMarkers.length; i++) {{
+#                         var marker = new longdo.Marker(
+#                             {{ lon: poiMarkers[i].lon, lat: poiMarkers[i].lat }},
+#                             {{ title: poiMarkers[i].title, 
+#                                icon: {{ url: "https://map.longdo.com/mmmap/images/pin_mark.png", offset: {{ "x": 12, "y": 35" }} }} }}
+#                         );
+#                         map.Overlays.add(marker);
+#                     }}
+
+#                     // 🔹 วางหมุดต้นทาง-ปลายทาง และคำนวณเส้นทาง
+#                     for (var i = 0; i < routeMarkers.length; i++) {{
+#                         var marker = new longdo.Marker(
+#                             {{ lon: routeMarkers[i].lon, lat: routeMarkers[i].lat }},
+#                             {{ title: routeMarkers[i].title, 
+#                                icon: {{ url: "https://map.longdo.com/mmmap/images/pin_red.png", offset: {{ "x": 12, "y": 35" }} }} }}
+#                         );
+#                         map.Overlays.add(marker);
+#                         map.Route.add({{ lon: routeMarkers[i].lon, lat: routeMarkers[i].lat }});
+#                     }}
+
+#                     // 🔹 ค้นหาเส้นทาง
+#                     map.Route.search().then(function(result) {{
+#                         if (result && result.routes && result.routes.length > 0) {{
+#                             console.log("Route found: ", result.routes[0]);
+#                         }} else {{
+#                             console.error("No route data available.");
+#                         }}
+#                     }}).catch(function(error) {{
+#                         console.error("Error searching for route:", error);
+#                     }});
+#                 }}
+
+#                 setTimeout(function() {{
+#                     if (typeof longdo !== "undefined") {{
+#                         init();
+#                     }} else {{
+#                         console.error("Longdo Map API failed to load.");
+#                     }}
+#                 }}, 1000);
+#             </script>
+#         </body>
+#     </html>
+#     """
+
+#     components.html(html_code, height=800)
+
+# # 🔹 ข้อมูลตัวอย่าง
+# start_location = (13.74308, 100.54898)
+# end_location = (13.72431, 100.55885)
+
+# places_with_coordinates = [
+#     {"place_name": "ร้านหนังสือพิมพ์", "latitude": 13.74, "longitude": 100.56},
+#     {"place_name": "ร้านอีบุค", "latitude": 13.74, "longitude": 100.54},
+#     {"place_name": "กัญนา", "latitude": 13.74, "longitude": 100.50}
+# ]
+
+# extracted_data = [
+#     {"place_name": "ร้านกาแฟ", "place_lat": "13.75", "place_lon": "100.55"},
+#     {"place_name": "ตลาดนัด", "place_lat": "13.76", "place_lon": "100.57"}
+# ]
+
+# route_data = {}  # สามารถเพิ่มข้อมูลเส้นทางเพิ่มเติมได้
+
+# # 🔹 เรียกใช้งานฟังก์ชัน
+# display_longdo_map(route_data, extracted_data, start_location, end_location, places_with_coordinates)
 
 # เนื่องจากรูปแบบของข้อมูลใน ฟังขั่น search_places_of_interest ไม่ตรงกับรูปแบบในการวิเคราะห์แผนที่เลยต้องมาปรับรูปแบบกันก่อน
 def extract_and_return_data_from_places(places_of_interest):

@@ -2,7 +2,7 @@ import streamlit as st
 from Map_project.function_routes import (
     convert_locations, display_route_explanation, explain_route_with_llm, 
     get_places_from_route, get_route_data, process_places_of_interest_routes, 
-    search_places_of_interest, create_map, recommend_places,extract_and_return_data_from_places
+    search_places_of_interest, create_map, recommend_places,extract_and_return_data_from_places, get_route_path_from_id
 )
 
 # หัวข้อหน้าเว็บ
@@ -40,8 +40,7 @@ if places_with_coordinates and places_of_interest:
     create_map(route_data, places_of_interest, user_location, user_destination, places_with_coordinates)
 else:
     st.warning("ไม่สามารถแสดงแผนที่ได้เนื่องจากไม่มีข้อมูลที่จำเป็น")
-#print(extracted_data)
-
+path = get_route_path_from_id(route_data['data'][0]['id'])
 # 5. แสดงคำอธิบายเส้นทางการเดินทาง
 explanation = explain_route_with_llm(route_data)
 st.write(f"LLM Explanation: {explanation}")  # ตรวจสอบคำอธิบายจาก LLM

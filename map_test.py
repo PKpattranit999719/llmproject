@@ -443,127 +443,124 @@
 # DisplayMap()
 
 
-# import streamlit as st
-# import streamlit.components.v1 as components
-# import json
+import streamlit as st
+import streamlit.components.v1 as components
+import json
 
-# st.title("Longdo Map - Route & POIs")
+st.title("Longdo Map - Route & POIs")
 
-# def DisplayMap(poi_markers_js, route_markers_js):
-#     html_code = f"""
-#     <!DOCTYPE HTML>
-#     <html>
-#         <head>
-#             <meta charset="UTF-8">
-#             <title>Longdo Map Route</title>
-#             <style type="text/css">
-#             html, body {{ height: 100%; margin: 0; }}
-#             #map {{ height: 80%; width: 100%; }}
-#             #result {{
-#                 width: 100%;
-#                 height: 20%;
-#                 background: #ffffff;
-#                 border-top: 4px solid #dddddd;
-#                 overflow: auto;
-#                 padding: 10px;
-#                 box-sizing: border-box;
-#                 font-family: Arial, sans-serif;
-#             }}
-#             </style>
-#             <script type="text/javascript" src="https://api.longdo.com/map/?key=7b6f8a4c53a57fa8315fbdcf5b108c83"></script>
-#         </head>
-#         <body>
-#             <div id="map"></div>
-#             <div id="result"></div>
+def DisplayMap(poi_markers_js, route_markers_js):
+    html_code = f"""
+    <!DOCTYPE HTML>
+    <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Longdo Map Route</title>
+            <style type="text/css">
+            html, body {{ height: 100%; margin: 0; }}
+            #map {{ height: 80%; width: 100%; }}
+            
+            </style>
+            <script type="text/javascript" src="https://api.longdo.com/map/?key=7b6f8a4c53a57fa8315fbdcf5b108c83"></script>
+        </head>
+        <body>
+            <div id="map"></div>
+            <div id="result"></div>
 
-#             <script>
-#                 function init() {{
-#                     var map = new longdo.Map({{
-#                         placeholder: document.getElementById('map')
-#                     }});
+            <script>
+                function init() {{
+                    var map = new longdo.Map({{
+                        placeholder: document.getElementById('map')
+                    }});
 
-#                     map.Route.mode(longdo.RouteMode.Cost);
+                    map.Route.mode(longdo.RouteMode.Cost);
 
-#                     var poiMarkers = {poi_markers_js};
-#                     var routeMarkers = {route_markers_js};
+                    var poiMarkers = {poi_markers_js};
+                    var routeMarkers = {route_markers_js};
 
-#                     // วางหมุดสำหรับสถานที่น่าสนใจ (POI)
-#                     for (var i = 0; i < poiMarkers.length; i++) {{
-#                         var marker = new longdo.Marker(
-#                             {{ lon: poiMarkers[i].lon, lat: poiMarkers[i].lat }},
-#                             {{ title: poiMarkers[i].title, icon: {{ url: "https://map.longdo.com/mmmap/images/pin_mark.png", offset: {{ "x": 12, "y": 35 }} }} }}
-#                         );
-#                         map.Overlays.add(marker);
-#                     }}
+                    // วางหมุดสำหรับสถานที่น่าสนใจ (POI)
+                    for (var i = 0; i < poiMarkers.length; i++) {{
+                        var marker = new longdo.Marker(
+                            {{ lon: poiMarkers[i].lon, lat: poiMarkers[i].lat }},
+                            {{ title: poiMarkers[i].title, icon: {{ url: "https://map.longdo.com/mmmap/images/pin_mark.png", offset: {{ "x": 12, "y": 35 }} }} }}
+                        );
+                        map.Overlays.add(marker);
+                    }}
 
-#                     // วางหมุดต้นทาง-ปลายทาง + คำนวณเส้นทาง
-#                     for (var i = 0; i < routeMarkers.length; i++) {{
-#                         var marker = new longdo.Marker(
-#                             {{ lon: routeMarkers[i].lon, lat: routeMarkers[i].lat }},
-#                             {{ title: routeMarkers[i].title, icon: {{ url: "https://map.longdo.com/mmmap/images/pin_red.png", offset: {{ "x": 12, "y": 35 }} }} }}
-#                         );
-#                         map.Overlays.add(marker);
-#                         map.Route.add({{ lon: routeMarkers[i].lon, lat: routeMarkers[i].lat }});
-#                     }}
+                    // วางหมุดต้นทาง-ปลายทาง + คำนวณเส้นทาง
+                    for (var i = 0; i < routeMarkers.length; i++) {{
+                        var marker = new longdo.Marker(
+                            {{ lon: routeMarkers[i].lon, lat: routeMarkers[i].lat }},
+                            {{ title: routeMarkers[i].title, icon: {{ url: "https://map.longdo.com/mmmap/images/pin_red.png", offset: {{ "x": 12, "y": 35 }} }} }}
+                        );
+                        map.Overlays.add(marker);
+                        map.Route.add({{ lon: routeMarkers[i].lon, lat: routeMarkers[i].lat }});
+                    }}
 
-#                     // ค้นหาเส้นทางและแสดงผล
-#                     map.Route.search().then(function(result) {{
-#                         if (result && result.routes && result.routes.length > 0) {{
-#                             displayRouteDetails(result.routes[0]);
-#                         }} else {{
-#                             console.error("No route data available.");
-#                         }}
-#                     }}).catch(function(error) {{
-#                         console.error("Error searching for route:", error);
-#                     }});
-#                 }}
+                    // ค้นหาเส้นทางและแสดงผล
+                    map.Route.search().then(function(result) {{
+                        if (result && result.routes && result.routes.length > 0) {{
+                            displayRouteDetails(result.routes[0]);
+                        }} else {{
+                            console.error("No route data available.");
+                        }}
+                    }}).catch(function(error) {{
+                        console.error("Error searching for route:", error);
+                    }});
+                }}
 
-#                 function displayRouteDetails(routeData) {{
-#                     var resultDiv = document.getElementById('result');
-#                     resultDiv.innerHTML = '';
+                function displayRouteDetails(routeData) {{
+                    var resultDiv = document.getElementById('result');
+                    resultDiv.innerHTML = '';
 
-#                     if (routeData && routeData.summary) {{
-#                         var details = `
-#                             <h3>Route Details</h3>
-#                             <p><strong>Distance:</strong> ${{routeData.summary.distance}} meters</p>
-#                             <p><strong>Duration:</strong> ${{routeData.summary.duration}} seconds</p>
-#                         `;
-#                         resultDiv.innerHTML = details;
-#                     }} else {{
-#                         resultDiv.innerHTML = '<p>No route data available.</p>';
-#                     }}
-#                 }}
+                    if (routeData && routeData.summary) {{
+                        var details = `
+                            <h3>Route Details</h3>
+                            <p><strong>Distance:</strong> ${{routeData.summary.distance}} meters</p>
+                            <p><strong>Duration:</strong> ${{routeData.summary.duration}} seconds</p>
+                        `;
+                        resultDiv.innerHTML = details;
+                    }} else {{
+                        resultDiv.innerHTML = '<p>No route data available.</p>';
+                    }}
+                }}
 
-#                 setTimeout(function() {{
-#                     if (typeof longdo !== "undefined") {{
-#                         init();
-#                     }} else {{
-#                         console.error("Longdo Map API failed to load.");
-#                     }}
-#                 }}, 1000);
-#             </script>
-#         </body>
-#     </html>
-#     """
-#     components.html(html_code, height=800)
+                setTimeout(function() {{
+                    if (typeof longdo !== "undefined") {{
+                        init();
+                    }} else {{
+                        console.error("Longdo Map API failed to load.");
+                    }}
+                }}, 1000);
+            </script>
+        </body>
+    </html>
+    """
+    components.html(html_code, height=800)
 
-# # 🔥 ข้อมูลที่แยกเป็น 2 ประเภท
-# poi_markers = [
-#     { "lon": 100.56, "lat": 13.74, "title": "ร้านหนังสือพิมพ์" },
-#     { "lon": 100.54, "lat": 13.74, "title": "ร้านอีบุค" },
-#     { "lon": 100.50, "lat": 13.74, "title": "กัญนา" }
-# ]
+# 🔥 ข้อมูลที่แยกเป็น 2 ประเภท
+poi_markers = [
+    { "lon": 100.551857, "lat": 13.742574, "title": "ร้านหนังสือพิมพ์" },
+    { "lon": 100.501796692173, "lat": 13.7558635299692, "title": "ร้านอาหารหรรษายอดผัก" },
+    { "lon": 100.501392917058, "lat": 13.7553115354796, "title": "ร้านอาหารชิคเค่นทรีท" },
+    { "lon": 100.50142830701398, "lat": 13.755223794845131, "title": "ร้านอาหารนะโม คิทเช่น" },
+    { "lon": 100.50520420074463, "lat": 13.759779743332523,"title":"ร้านอาหาร บราวน์ชูการ์ พระสุเมรุ"},
+    { "lon": 100.508751408176, "lat": 13.7612783972825,"title":"ร้านอาหาร บราวน์ชูการ์ พระสุเมรุ"},
+    { "lon": 100.504047076624, "lat": 13.7599914917184,"title":"ร้านอาหารร้าน ป. โภชนา"} 
+]
 
-# route_markers = [
-#     { "lon": 100.54898, "lat": 13.74308, "title": "จุดเริ่มต้น" },
-#     { "lon": 100.55885, "lat": 13.72431, "title": "จุดปลายทาง" }
-# ]
+ 
+route_markers = [
+    { "lon": 100.5018, "lat": 13.7563, "title": "จุดเริ่มต้น"  },
+ 
+    { "lon": 99.978337, "lat": 14.022788, "title": "จุดปลายทาง" }
+]
 
-# # แปลง Python List -> JSON string ให้ JavaScript ใช้
-# poi_markers_js = json.dumps(poi_markers, ensure_ascii=False)
-# route_markers_js = json.dumps(route_markers, ensure_ascii=False)
+# แปลง Python List -> JSON string ให้ JavaScript ใช้
+poi_markers_js = json.dumps(poi_markers, ensure_ascii=False)
+route_markers_js = json.dumps(route_markers, ensure_ascii=False)
 
-# DisplayMap(poi_markers_js, route_markers_js)
+DisplayMap(poi_markers_js, route_markers_js)
 
 
 import streamlit as st
@@ -646,18 +643,33 @@ def DisplayMap(poi_markers_js, route_markers_js):
 
 # 🔥 ข้อมูลที่แยกเป็น 2 ประเภท
 poi_markers = [
-    { "lon": 100.56, "lat": 13.74, "title": "ร้านหนังสือพิมพ์" },
-    { "lon": 100.54, "lat": 13.74, "title": "ร้านอีบุค" },
-    { "lon": 100.50, "lat": 13.74, "title": "กัญนา" }
+    { "lon": 100.501796692173, "lat": 13.7558635299692, "title": "ร้านอาหารหรรษายอดผัก" },
+    { "lon": 100.501392917058, "lat": 13.7553115354796, "title": "ร้านอาหารชิคเค่นทรีท" },
+    { "lon": 100.50142830701398, "lat": 13.755223794845131, "title": "ร้านอาหารนะโม คิทเช่น" },
+    { "lon": 100.50520420074463, "lat": 13.759779743332523,"title":"ร้านอาหาร บราวน์ชูการ์ พระสุเมรุ"},
+    { "lon": 100.508751408176, "lat": 13.7612783972825,"title":"ร้านอาหาร บราวน์ชูการ์ พระสุเมรุ"},
+    { "lon": 100.504047076624, "lat": 13.7599914917184,"title":"ร้านอาหารร้าน ป. โภชนา"}
 ]
 
-route_markers = [
-    { "lon": 100.54898, "lat": 13.74308, "title": "จุดเริ่มต้น" },
-    { "lon": 100.55885, "lat": 13.72431, "title": "จุดปลายทาง" }
+routeMarkers = [
+    { "lon": 100.5018, "lat": 13.7563, "title": "จุดเริ่มต้น", "distance": 0, "interval": 0 },
+    { "distance": 39, "interval": 14 },
+    { "distance": 135, "interval": 46 },
+    { "distance": 55, "interval": 10 },
+    { "distance": 287, "interval": 56 },
+    { "distance": 346, "interval": 93 },
+    { "distance": 173, "interval": 25 },
+    { "distance": 898, "interval": 82 },
+    { "distance": 251, "interval": 19 },
+    { "distance": 8691, "interval": 423 },
+    { "distance": 26219, "interval": 1539 },
+    { "distance": 18633, "interval": 1003 },
+    { "distance": 44, "interval": 5 },
+    { "distance": 1141, "interval": 121 },
+    { "distance": 27601, "interval": 1948 },
+    { "distance": 1484, "interval": 232 },
+    { "lon": 99.978337, "lat": 14.022788, "title": "จุดปลายทาง", "distance": 85997, "interval": 5616 }
 ]
 
-# แปลง Python List -> JSON string ให้ JavaScript ใช้
-poi_markers_js = json.dumps(poi_markers, ensure_ascii=False)
-route_markers_js = json.dumps(route_markers, ensure_ascii=False)
 
-DisplayMap(poi_markers_js, route_markers_js)
+ 

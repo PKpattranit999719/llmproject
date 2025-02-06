@@ -110,9 +110,9 @@ def get_route_data(flon, flat, tlon, tlat):
         response = requests.get(full_url)
         response.raise_for_status()
         route_data = response.json()
-        print(route_data)
+        print(route_data) # ค่าที่ได้จาก API
         # print("                                                                                                            ")
-        # print(f"Route data received: {route_data}")  # เช็คค่าที่ได้จาก API
+        # print(f"Route data received: {route_data}") 
     
         return route_data
     except requests.exceptions.RequestException as e:
@@ -405,122 +405,96 @@ def create_map(route_data, extracted_data, start_location, end_location, places_
     map_html = m._repr_html_()
     st.components.v1.html(map_html, height=600)
 
-# def create_map(route_data, extracted_data, start_location, end_location, places_with_coordinates):
-#     """
-#     แสดงแผนที่ Longdo Map พร้อมเส้นทางและจุดที่น่าสนใจ
-    
-#     Args:
-#         route_data (dict): ข้อมูลเส้นทาง
-#         extracted_data (list): ข้อมูลสถานที่ที่ดึงมา
-#         start_location (tuple): พิกัดเริ่มต้น (lat, lon)
-#         end_location (tuple): พิกัดปลายทาง (lat, lon)
-#         places_with_coordinates (list): รายการสถานที่พร้อมพิกัด
-#     """
-    
-#     # 🔹 แปลงข้อมูลให้เป็น JSON สำหรับ JavaScript
-#     route_markers = [{"lon": start_location[1], "lat": start_location[0], "title": "จุดเริ่มต้น"}]
-#     route_markers.extend([{"lon": place["longitude"], "lat": place["latitude"], "title": place["place_name"]} for place in places_with_coordinates])
-#     route_markers.append({"lon": end_location[1], "lat": end_location[0], "title": "จุดปลายทาง"})
-    
-#     poi_markers = [{"lon": float(data["place_lon"]), "lat": float(data["place_lat"]), "title": data["place_name"]} for data in extracted_data if data["place_lat"] and data["place_lon"]]
+# แผนที่ที่ใช้โดย Longdo map
+def DisplayMap(poi_markers_js, route_markers_js):
+    html_code = f"""
+    <!DOCTYPE HTML>
+    <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Longdo Map Route</title>
+            <style type="text/css">
+            html, body {{ height: 100%; margin: 0; }}
+            #map {{ height: 80%; width: 100%; }}
+            
+            </style>
+            <script type="text/javascript" src="https://api.longdo.com/map/?key=7b6f8a4c53a57fa8315fbdcf5b108c83"></script>
+        </head>
+        <body>
+            <div id="map"></div>
+            <div id="result"></div>
 
-#     route_markers_js = json.dumps(route_markers, ensure_ascii=False)
-#     poi_markers_js = json.dumps(poi_markers, ensure_ascii=False)
+            <script>
+                function init() {{
+                    var map = new longdo.Map({{
+                        placeholder: document.getElementById('map')
+                    }});
 
-#     # 🔹 HTML + JavaScript สำหรับ Longdo Map
-#     html_code = f"""
-#     <!DOCTYPE HTML>
-#     <html>
-#         <head>
-#             <meta charset="UTF-8">
-#             <title>Longdo Map Route</title>
-#             <style>
-#                 html, body {{ height: 100%; margin: 0; }}
-#                 #map {{ height: 100%; width: 100%; }}
-#             </style>
-#             <script src="https://api.longdo.com/map/?key=YOUR_LONGDO_API_KEY"></script>
-#         </head>
-#         <body>
-#             <div id="map"></div>
-#             <script>
-#                 function init() {{
-#                     var map = new longdo.Map({{
-#                         placeholder: document.getElementById('map')
-#                     }});
+                    map.Route.mode(longdo.RouteMode.Cost);
 
-#                     map.Route.mode(longdo.RouteMode.Cost);
+                    var poiMarkers = {poi_markers_js};
+                    var routeMarkers = {route_markers_js};
 
-#                     var poiMarkers = {poi_markers_js};
-#                     var routeMarkers = {route_markers_js};
+                    // วางหมุดสำหรับสถานที่น่าสนใจ (POI)
+                    for (var i = 0; i < poiMarkers.length; i++) {{
+                        var marker = new longdo.Marker(
+                            {{ lon: poiMarkers[i].lon, lat: poiMarkers[i].lat }},
+                            {{ title: poiMarkers[i].title, icon: {{ url: "https://map.longdo.com/mmmap/images/pin_mark.png", offset: {{ "x": 12, "y": 35 }} }} }}
+                        );
+                        map.Overlays.add(marker);
+                    }}
 
-#                     // 🔹 วางหมุดสถานที่น่าสนใจ (POI) -> สีส้ม
-#                     for (var i = 0; i < poiMarkers.length; i++) {{
-#                         var marker = new longdo.Marker(
-#                             {{ lon: poiMarkers[i].lon, lat: poiMarkers[i].lat }},
-#                             {{ title: poiMarkers[i].title, 
-#                                icon: {{ url: "https://map.longdo.com/mmmap/images/pin_mark.png", offset: {{ "x": 12, "y": 35" }} }} }}
-#                         );
-#                         map.Overlays.add(marker);
-#                     }}
+                    // วางหมุดต้นทาง-ปลายทาง + คำนวณเส้นทาง
+                    for (var i = 0; i < routeMarkers.length; i++) {{
+                        var marker = new longdo.Marker(
+                            {{ lon: routeMarkers[i].lon, lat: routeMarkers[i].lat }},
+                            {{ title: routeMarkers[i].title, icon: {{ url: "https://map.longdo.com/mmmap/images/pin_red.png", offset: {{ "x": 12, "y": 35 }} }} }}
+                        );
+                        map.Overlays.add(marker);
+                        map.Route.add({{ lon: routeMarkers[i].lon, lat: routeMarkers[i].lat }});
+                    }}
 
-#                     // 🔹 วางหมุดต้นทาง-ปลายทาง และคำนวณเส้นทาง
-#                     for (var i = 0; i < routeMarkers.length; i++) {{
-#                         var marker = new longdo.Marker(
-#                             {{ lon: routeMarkers[i].lon, lat: routeMarkers[i].lat }},
-#                             {{ title: routeMarkers[i].title, 
-#                                icon: {{ url: "https://map.longdo.com/mmmap/images/pin_red.png", offset: {{ "x": 12, "y": 35" }} }} }}
-#                         );
-#                         map.Overlays.add(marker);
-#                         map.Route.add({{ lon: routeMarkers[i].lon, lat: routeMarkers[i].lat }});
-#                     }}
+                    // ค้นหาเส้นทางและแสดงผล
+                    map.Route.search().then(function(result) {{
+                        if (result && result.routes && result.routes.length > 0) {{
+                            displayRouteDetails(result.routes[0]);
+                        }} else {{
+                            console.error("No route data available.");
+                        }}
+                    }}).catch(function(error) {{
+                        console.error("Error searching for route:", error);
+                    }});
+                }}
 
-#                     // 🔹 ค้นหาเส้นทาง
-#                     map.Route.search().then(function(result) {{
-#                         if (result && result.routes && result.routes.length > 0) {{
-#                             console.log("Route found: ", result.routes[0]);
-#                         }} else {{
-#                             console.error("No route data available.");
-#                         }}
-#                     }}).catch(function(error) {{
-#                         console.error("Error searching for route:", error);
-#                     }});
-#                 }}
+                function displayRouteDetails(routeData) {{
+                    var resultDiv = document.getElementById('result');
+                    resultDiv.innerHTML = '';
 
-#                 setTimeout(function() {{
-#                     if (typeof longdo !== "undefined") {{
-#                         init();
-#                     }} else {{
-#                         console.error("Longdo Map API failed to load.");
-#                     }}
-#                 }}, 1000);
-#             </script>
-#         </body>
-#     </html>
-#     """
+                    if (routeData && routeData.summary) {{
+                        var details = `
+                            <h3>Route Details</h3>
+                            <p><strong>Distance:</strong> ${{routeData.summary.distance}} meters</p>
+                            <p><strong>Duration:</strong> ${{routeData.summary.duration}} seconds</p>
+                        `;
+                        resultDiv.innerHTML = details;
+                    }} else {{
+                        resultDiv.innerHTML = '<p>No route data available.</p>';
+                    }}
+                }}
 
-#     components.html(html_code, height=800)
+                setTimeout(function() {{
+                    if (typeof longdo !== "undefined") {{
+                        init();
+                    }} else {{
+                        console.error("Longdo Map API failed to load.");
+                    }}
+                }}, 1000);
+            </script>
+        </body>
+    </html>
+    """
+    components.html(html_code, height=800)
 
-# # 🔹 ข้อมูลตัวอย่าง
-# start_location = (13.74308, 100.54898)
-# end_location = (13.72431, 100.55885)
-
-# places_with_coordinates = [
-#     {"place_name": "ร้านหนังสือพิมพ์", "latitude": 13.74, "longitude": 100.56},
-#     {"place_name": "ร้านอีบุค", "latitude": 13.74, "longitude": 100.54},
-#     {"place_name": "กัญนา", "latitude": 13.74, "longitude": 100.50}
-# ]
-
-# extracted_data = [
-#     {"place_name": "ร้านกาแฟ", "place_lat": "13.75", "place_lon": "100.55"},
-#     {"place_name": "ตลาดนัด", "place_lat": "13.76", "place_lon": "100.57"}
-# ]
-
-# route_data = {}  # สามารถเพิ่มข้อมูลเส้นทางเพิ่มเติมได้
-
-# # 🔹 เรียกใช้งานฟังก์ชัน
-# display_longdo_map(route_data, extracted_data, start_location, end_location, places_with_coordinates)
-
-# เนื่องจากรูปแบบของข้อมูลใน ฟังขั่น search_places_of_interest ไม่ตรงกับรูปแบบในการวิเคราะห์แผนที่เลยต้องมาปรับรูปแบบกันก่อน
 def extract_and_return_data_from_places(places_of_interest):
     """
     Extract and return data from places_of_interest.
@@ -531,7 +505,6 @@ def extract_and_return_data_from_places(places_of_interest):
     """
     extracted_data = []
  
-    # print("--------------------------------------------------------------------------------------")
     for place in places_of_interest:  # วนลูปใน places_of_interest
         data_list = place.get("data", [])  # ดึงค่า data ออกมา (เป็น list)
         
@@ -545,8 +518,7 @@ def extract_and_return_data_from_places(places_of_interest):
                 'place_lat': place_lat,
                 'place_lon': place_lon,
             })
-    # print("Places of Interest ",extracted_data)  # ตรวจสอบผลลัพธ์
-    # print("--------------------------------------------------------------------------------------")
+    # print("Places of Interest ",extracted_data)  # ตรวจสอบผลลัพธ์ ของการดึงข้อมูลหาสถานที่ที่น่าสนใจออกมา
     return extracted_data
 
 # ทำการวิเคราะห์สถานที่  ข้อมูลไม่เข้าฟังชั่นนี้
@@ -718,27 +690,67 @@ def explain_route_with_llm(route_data):
     if 'guide' not in first_route or not first_route['guide']:
         return "❌ ไม่มีคำแนะนำเส้นทาง"
 
+    # 🔹 แปลง TurnCode เป็นข้อความที่เข้าใจง่าย
+    turn_code_mapping = {
+        0: "เลี้ยวซ้าย",
+        1: "เลี้ยวขวา",
+        2: "เลี้ยวซ้ายเล็กน้อย",
+        3: "เลี้ยวขวาเล็กน้อย",
+        4: "ทิศทางไม่ระบุ",
+        5: "ตรงไป",
+        6: "เข้าสู่ทางด่วน",
+        9: "ถึงที่หมาย",
+        11: "เดินทางโดยเรือเฟอร์รี่"
+    }
+
     route_steps = []
+    total_distance = 0  # ระยะทางรวม
+    total_time = 0       # เวลารวม
+
     for instruction in first_route['guide']:
-        
-        turn = instruction.get('turn', 'ไม่ระบุ')
+        turn_code = instruction.get('turn', 4)  # ค่าเริ่มต้นคือ "ทิศทางไม่ระบุ"
+        turn = turn_code_mapping.get(turn_code, "ไม่ระบุทิศทาง")
         name = instruction.get('name', 'ไม่ระบุ')
-        distance = instruction.get('distance', 'ไม่ระบุ')
-        interval = instruction.get('interval', 'ไม่ระบุ')
-        step = f"🔹 เลี้ยวที่ {turn} ไปที่ {name}, ระยะทาง {distance} เมตร, ระยะห่าง {interval} เมตร"
+        distance = instruction.get('distance', 0)  # ระยะทาง (เมตร)
+        interval = instruction.get('interval', 0)  # เวลา (วินาที)
+
+        total_distance += distance
+        total_time += interval
+
+        step = f"🔹 {turn} ไปที่ {name}, ระยะทาง {distance} เมตร, ใช้เวลา {interval} วินาที"
         route_steps.append(step)
+
+    # แปลงหน่วยของระยะทางและเวลา
+    total_distance_km = total_distance / 1000  # แปลงเมตรเป็นกิโลเมตร
+    total_time_min = total_time / 60  # แปลงวินาทีเป็นนาที
 
     route_description = "\n".join(route_steps)
 
-    print(f"✅ Route description generated:\n{route_description}")  # ตรวจสอบก่อนส่งให้ LLM
+    print(f"✅ Route description generated:\n{route_description}")  # Debug
 
+    # 🔹 สร้าง Prompt ให้ LLM
     prompt = f"""
-    นี่คือคำแนะนำการเดินทาง:
-    {route_description}
+        นี่คือคำแนะนำการเดินทาง:
 
-    กรุณาอธิบายเส้นทางให้อ่านง่ายสำหรับคนที่ไม่เคยไปมาก่อน
-    """
+        {route_description}
 
+        ข้อมูลเสริม:
+        - ระยะทางรวม: {total_distance_km:.2f} กิโลเมตร
+        - เวลาทั้งหมด: {total_time_min:.1f} นาที
+
+        กรุณาอธิบายเส้นทางให้อ่านง่ายสำหรับคนที่ไม่เคยไปมาก่อน โดยให้ข้อมูลการเดินทางในรูปแบบดังนี้:
+
+        1. เริ่มต้นที่ [ชื่อจุดเริ่มต้น]
+        2. เดินทางไปที่ [ชื่อถนนหรือสถานที่]
+            - ระยะทาง: [ระยะทางเป็นเมตร] เมตร (ใช้เวลา [เวลาเป็นวินาที/นาที])
+        3. [รายละเอียดเพิ่มเติมเกี่ยวกับจุดถัดไป]
+            - ระยะทาง: [ระยะทาง] เมตร (ใช้เวลา [เวลา])
+        4. ต่อไปในลักษณะเดียวกันสำหรับทุกจุด
+
+        สรุปรวมทั้งหมด:
+        - ระยะทางทั้งหมดที่เดินทาง จากจุดเริ่มต้นมายังจุดหมายปลายทาง คือ [รวมระยะทางทั้งหมด] เมตร/กิโลเมตร (แปลงจากเมตรเป็นกิโลเมตรถ้ามากกว่า 1000 เมตร)
+        - เวลาที่ใช้ในการเดินทางทั้งหมดคือ [รวมเวลา] นาที (ถ้ามากกว่า 60 นาที ให้แสดงเป็นชั่วโมง เช่น 1 ชม. 30 นาที)
+        """
     try:
         if hasattr(llm, 'invoke'):
             response = llm.invoke(prompt)
@@ -752,3 +764,4 @@ def explain_route_with_llm(route_data):
 # ฟังก์ชันการแสดงคำอธิบายการเดินทาง
 def display_route_explanation(route_data):
     explanation = explain_route_with_llm(route_data)
+    print("📌 คำอธิบายเส้นทางจาก LLM:", explanation)

@@ -8,7 +8,7 @@ from Map_project.function_routes import (
 
 # หัวข้อหน้าเว็บ
 st.title("Test Function Routes")
-places_interest = "อยากกินข้าว"
+places_interest = "อยากแวะโรงพยาบาล"
 user_location = (13.7563, 100.5018)  # จุดเริ่มต้น กรุงเทพฯ
 user_destination = (14.022788, 99.978337)  # จุดสิ้นสุด กาญจนบุรี
 radius = 1  # รัศมีการค้นหาสถานที่ 5 กิโลเมตร
@@ -45,7 +45,7 @@ with st.spinner("⏳ กำลังโหลดข้อมูล..."):
     if route_data and 'data' in route_data:
         route_id = route_data['data'][0]['id']
         route_path_list = get_route_path_from_id(route_id)
-        print("Route Path List:", route_path_list)
+        # print("Route Path List:", route_path_list)
 
         # 3. ค้นหาสถานที่ที่น่าสนใจจากเส้นทาง
         places_of_interest = search_places_of_interest(route_path_list, keyword, radius)

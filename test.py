@@ -80,8 +80,8 @@ st.write(f"LLM Explanation: {explanation}")  # ตรวจสอบคำอธ
 display_route_explanation(explanation)  # แสดงคำอธิบายการเดินทาง
 
 # 6. แนะนำสถานที่ด้วย LLM
-if places_with_coordinates and places_of_interest:
-    recommendations = recommend_places(places_with_coordinates, places_of_interest, keyword)
+if poi_markers_js and places_of_interest:
+    recommendations = recommend_places(poi_markers_js, places_of_interest, keyword)
     st.write("คำแนะนำสถานที่ที่ดีที่สุดจากเส้นทาง:")
     st.markdown(recommendations)  # แสดงคำแนะนำจาก LLM
 else:

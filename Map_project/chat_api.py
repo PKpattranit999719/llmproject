@@ -246,61 +246,6 @@ def chat_with_api():
             st.session_state.messages.append({"role": "System", "content": system_reply})
             st.write(system_reply)
         
-        ###########################################################################################################################################################
-    #     if st.button("Search"):
-    #         # ตรวจสอบค่าต่างๆ ว่ามีหรือไม่
-    #         if not user_location or not radius or not search_query:
-    #             st.session_state.messages.append({"role": "System", "content": "Please provide valid inputs for location, radius, and search query."})
-    #             return
-
-    #         # เก็บข้อความจากผู้ใช้
-    #         user_message = f"Location: {user_location}, Radius: {radius} km, Search Query: {search_query}"
-    #         st.session_state.messages.append({"role": "User", "content": user_message})
-
-    #         try:
-    #             user_lat, user_lon = map(float, user_location.split(","))
-    #         except ValueError:
-    #             st.session_state.messages.append({"role": "System", "content": "Invalid location format. Please enter latitude, longitude."})
-    #             return
-
-    #         prompt = f"""
-    #         คำค้นหาผู้ใช้ : {search_query}
-    #         ตำแหน่ง : {user_lat},{user_lon}
-    #         รัศมี : {radius}
-    #         """
-    #         get_tool = create_tool()
-    #         llm_with_tool = llm.bind_tools(get_tool)
-    #         tools = llm_with_tool.invoke(prompt)
-    #         tool_call_data = tools.tool_calls
-
-    #         if tool_call_data[0]['name'] == "query_place":
-    #             # เรียกใช้ process_user_query สำหรับการค้นหาสถานที่
-    #             keyword, places_from_api = process_user_query(search_query, (user_lat, user_lon), radius)
-    #             if keyword:
-    #                 system_reply = f"Found places matching your search query: '{keyword}' within {radius} km of {user_location}."
-    #                 create_and_display_map(places_from_api, (user_lat, user_lon))  # แสดงแผนที่
-    #                 display_places_list(places_from_api)  # แสดงรายชื่อสถานที่
-    #                 display_recommendations(places_from_api, search_query)  # แสดงคำแนะนำ
-    #             else:
-    #                 system_reply = f"No places found matching your search query: '{search_query}' within {radius} km of {user_location}."
-    #         elif tool_call_data[0]['name'] == "query_routes":
-    #             # หากเป็นการถามหาเส้นทาง
-    #             route_data, places_of_interest = find_route(search_query, (user_lat, user_lon), user_destination, radius)
-    #             if route_data:
-    #                 sorted_route_points = sort_points(sort_points, user_location) # เรียงลำดับจุดเส้นทาง
-    #                 explanation = explain_route_with_llm(route_data)  # สร้างคำอธิบายเส้นทาง
-                    
-    #                 system_reply = f"Found routes matching your query: '{search_query}' within {radius} km of {user_location}."
-    #                 create_map(route_data, places_of_interest, (user_lat, user_lon), user_destination, sorted_route_points)
-    #                 recommendations = recommend_places(places_of_interest, search_query, top_n=10)
-    #                 print(recommendations)
-    #                 display_route_explanation(explanation)  # แสดงคำอธิบายการเดินทาง
-    #             else:
-    #                 system_reply = f"No routes found matching your search query: '{search_query}' within {radius} km of {user_location} and {user_destination}."
-
-    # st.session_state.messages.append({"role": "System", "content": system_reply})
-    # st.write(system_reply)
-
 # เรียกใช้ฟังก์ชัน chat_with_api ใน Streamlit
 if __name__ == "__main__":
     chat_with_api()

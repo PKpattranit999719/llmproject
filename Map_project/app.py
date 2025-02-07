@@ -18,37 +18,80 @@ st.title("SmartMap AI")
 # # เพิ่มตัวเลือกการเลือกภาษา กรณีให้ทุกหน้าเปลี่ยนภาษาได้
 # language = st.selectbox("Choose Language", options=["English", "Thai"])
 
-# เมนู Sidebar
-if st.session_state.started:
+# # เมนู Sidebar
+# if st.session_state.started:
+#     st.sidebar.title("Main Menu")
+
+#     # เมนูหลัก
+#     menu = st.sidebar.selectbox(
+#         "Navigate",
+#         options=["Home", "CSV", "API"]
+#     )
+
+#     if menu == "Home":
+#         st.session_state.page = "home"
+#     elif menu == "CSV":
+#         csv_option = st.sidebar.selectbox(
+#             "Choose CSV Option",
+#             options=["Upload CSV", "Chat with CSV"]
+#         )
+#         if csv_option == "Upload CSV":
+#             st.session_state.page = "upload_csv"
+#         elif csv_option == "Chat with CSV":
+#             st.session_state.page = "chat_csv"
+#     elif menu == "API":
+#         csv_option = st.sidebar.selectbox(
+#             "Choose API Option",
+#             options=["API KEY", "Chat with API"]
+#         )
+#         if csv_option == "API KEY":
+#             st.session_state.page = "upload_api"
+#         elif csv_option == "Chat with API":
+#             st.session_state.page = "chat_api"
+
+if "page" not in st.session_state:
+    st.session_state.page = "home"
+
+if "selected_menu" not in st.session_state:
+    st.session_state.selected_menu = "Home"  # เก็บเมนูที่เลือก
+
+if st.session_state.get("started", False):
     st.sidebar.title("Main Menu")
 
-    # เมนูหลัก
-    menu = st.sidebar.selectbox(
-        "Navigate",
-        options=["Home", "CSV", "API"]
-    )
-
-    if menu == "Home":
+    # ปุ่ม Home (ไม่มี selectbox)
+    if st.sidebar.button("Home page"):
+        st.session_state.selected_menu = "Home"
         st.session_state.page = "home"
-    elif menu == "CSV":
-        csv_option = st.sidebar.selectbox(
-            "Choose CSV Option",
+
+    # ปุ่ม CSV (แสดง selectbox เฉพาะเมื่อเลือก CSV)
+    if st.sidebar.button("Use CSV"):
+        st.session_state.selected_menu = "CSV"
+
+    if st.session_state.selected_menu == "CSV":
+        csv_menu = st.sidebar.selectbox(
+            "CSV Options",
             options=["Upload CSV", "Chat with CSV"]
         )
-        if csv_option == "Upload CSV":
+        if csv_menu == "Upload CSV":
             st.session_state.page = "upload_csv"
-        elif csv_option == "Chat with CSV":
+        elif csv_menu == "Chat with CSV":
             st.session_state.page = "chat_csv"
-    elif menu == "API":
-        csv_option = st.sidebar.selectbox(
-            "Choose API Option",
+
+    # ปุ่ม API (แสดง selectbox เฉพาะเมื่อเลือก API)
+    if st.sidebar.button("Use API"):
+        st.session_state.selected_menu = "API"
+
+    if st.session_state.selected_menu == "API":
+        api_menu = st.sidebar.selectbox(
+            "API Options",
             options=["API KEY", "Chat with API"]
         )
-        if csv_option == "API KEY":
+        if api_menu == "API KEY":
             st.session_state.page = "upload_api"
-        elif csv_option == "Chat with API":
+        elif api_menu == "Chat with API":
             st.session_state.page = "chat_api"
 
+    
 # Logic สำหรับการเปลี่ยนหน้า
 if st.session_state.page == "home":
     

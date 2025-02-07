@@ -140,70 +140,6 @@ def get_route_path_from_id(id):
         print(f"Error fetching route path data: {e}")
     return route_path_list
 
-# def get_lat_lon_from_osm(searched_location):
-#     """
-#     Get latitude and longitude from OpenStreetMap Nominatim API.
-
-#     Args:
-#         searched_location (str): The name of the place to search.
-
-#     Returns:
-#         tuple: Latitude and longitude of the searched place, or None if not found.
-#     """
-#     url = f'https://nominatim.openstreetmap.org/search?q={urllib.parse.quote(searched_location)}&format=json'
-#     headers = {'User-Agent': 'MyGeocodingApp/1.0'}
-    
-#     try:
-#         response = requests.get(url, headers=headers)
-#         response.raise_for_status()  # จะตรวจสอบว่า HTTP request สำเร็จหรือไม่
-#         data = response.json()
-        
-#         if data:
-#             lat = data[0].get('lat')
-#             lon = data[0].get('lon')
-#             return lat, lon
-#     except requests.exceptions.RequestException as e:
-#         print(f"Error during geocoding: {e}")
-    
-#     return None, None
-
-# def get_places_from_route(route_data):
-#     """
-#     Extract place name, latitude, and longitude from route data using OpenStreetMap Nominatim API.
-    
-#     Args:
-#         route_data (dict): Route data containing the list of guide points.
-
-#     Returns:
-#         list: A list of dictionaries containing place_name, latitude, and longitude.
-#     """
-#     places_with_coordinates = []
-
-#     # ตรวจสอบว่า route_data มีข้อมูลและ 'data' มีค่าว่างหรือไม่
-#     if 'data' in route_data and isinstance(route_data['data'], list) and len(route_data['data']) > 0:
-#         # ใช้ .get() เพื่อดึงข้อมูล guide จาก data[0] โดยไม่ให้เกิดข้อผิดพลาด
-#         guide_points = route_data['data'][0].get('guide', [])
-        
-#         for point in guide_points:
-#             name = point.get('name')
-            
-#             #print(f"Processing point: {name}")  # ดูว่าได้ค่าจุดไหนมาบ้าง
-            
-#             if name:
-#                 latitude, longitude = get_lat_lon_from_osm(name)
-                
-#                 #print(f"Resolved coordinates for {name}: lat={latitude}, lon={longitude}")  # ตรวจสอบค่าที่ได้จาก OSM API
-                
-#                 if latitude and longitude:
-#                     places_with_coordinates.append({
-#                         "place_name": name,
-#                         "latitude": latitude,
-#                         "longitude": longitude
-#                     })
-#     else:
-#         return None 
-#     return places_with_coordinates
-
 def search_interest_logdo_map_api(keyword, location, radius):
     try:
         base_url = "https://search.longdo.com/mapsearch/json/search"
@@ -226,7 +162,7 @@ def search_places_of_interest(route_path_list, keyword, radius):
     places_of_interest=[]
     for add in route_path_list['data']:
         middle_index = math.floor(len(add) / 2) 
-        
+        # LLm เช็ค
         selected_places = [add[0], add[middle_index], add[-1]]        
         for place in selected_places:
             latitude = place["lat"]
@@ -235,35 +171,7 @@ def search_places_of_interest(route_path_list, keyword, radius):
             ddot = extract_and_return_data_from_places(found_places)
 
             places_of_interest.extend(ddot)
-
-        #print(f"📍 Found places at ({latitude}, {longitude}):", found_places)  # Debug
- 
-    # return places_of_interest
-    
-    # places_of_interest = []
-    # for route in route_path_list:
-    #     if 'data' not in route:
-    #         print("❌ ไม่มี key 'data' ใน route")
-    #         continue
-        
-    #     for path_segment in route['data']:  # ✅ path_segment คือ list ที่เก็บ dict พิกัด
-    #         for place in path_segment:  # ✅ place เป็น dict ของ {'lat': ..., 'lon': ...}
-    #             latitude = place.get("lat")
-    #             longitude = place.get("lon")
-
-    #             if latitude is not None and longitude is not None:
-    #                 found_places = search_interest_logdo_map_api(keyword, (latitude, longitude), radius)
-
-    #                 if found_places:  # ✅ ตรวจสอบว่า `found_places` ไม่ใช่ null หรือ empty
-    #                     places_of_interest.extend(found_places)
-    #                     #print(f"📍 พบสถานที่ที่ ({latitude}, {longitude}):", found_places)
-    #                 else:
-    #                     print(f"🚫 ไม่พบสถานที่ที่ ({latitude}, {longitude}) → ข้ามตำแหน่งนี้ไป")
-    #             else:
-    #                 print("ไม่พบข้อมูลหรือข้อมูลที่ได้รับไม่ถูกต้อง")
-    #     print ("รายชื่อplaces interest ทั้งหมด",places_of_interest)
     return places_of_interest
-
 
 # แผนที่ที่ใช้โดย Longdo map
 def DisplayMap(poi_markers_js, route_markers_js):
@@ -347,61 +255,6 @@ def DisplayMap(poi_markers_js, route_markers_js):
     """
     components.html(html_code, height=800)
 
-# def extract_and_return_data_from_places(places_of_interest): ## แบบเดิม
-#     """
-#     Extract and return data from places_of_interest.
-#     Args:
-#         places_of_interest (list): List of places containing place_name and data.
-#     Returns:
-#         list: A list of dictionaries containing the name, latitude, and longitude of places.
-#     """
-#     extracted_data = []
- 
-#     for place in places_of_interest:  # วนลูปใน places_of_interest
-#         data_list = place.get("data", [])  # ดึงค่า data ออกมา (เป็น list)
-        
-#         for val in data_list:  # วนลูปใน data เพื่อดึงค่า lat/lon
-#             place_name = val.get("name", "Unknown")
-#             place_lat = val.get("lat", "Unknown")
-#             place_lon = val.get("lon", "Unknown")
-            
-#             extracted_data.append({
-#                 'place_name': place_name,
-#                 'place_lat': place_lat,
-#                 'place_lon': place_lon,
-#             })
-#     # print("Places of Interest ",extracted_data)  # ตรวจสอบผลลัพธ์ ของการดึงข้อมูลหาสถานที่ที่น่าสนใจออกมา
-#     return extracted_data
-
-# def extract_and_return_data_from_places(places_of_interest):
-#     """
-#     Extract and return data from places_of_interest.
-#     Args:
-#         places_of_interest (list): List of places containing place_name and data.
-#     Returns:
-#         list: A list of dictionaries containing the name, latitude, and longitude of places.
-#     """
-#     extracted_data = []
-
-#     for place in places_of_interest:  # วนลูปใน places_of_interest
-#         if isinstance(place, dict):  # ตรวจสอบว่า place เป็น dict
-#             data_list = place.get("data", [])  # ดึงค่า data ออกมา (เป็น list)
-
-#             for val in data_list:  # วนลูปใน data เพื่อดึงค่า lat/lon
-#                 place_name = val.get("name", "Unknown")
-#                 place_lat = val.get("lat", "Unknown")
-#                 place_lon = val.get("lon", "Unknown")
-
-#                 extracted_data.append({
-#                     'place_name': place_name,
-#                     'place_lat': place_lat,
-#                     'place_lon': place_lon,
-#                 })
-#         else:
-#             print("❌ ข้อมูลไม่เป็น dict:", place)  # แสดงข้อความแจ้งเตือนถ้า place ไม่เป็น dict
-    
-#     return extracted_data
-
 def extract_and_return_data_from_places(places_of_interest):
     extracted_data = []
 
@@ -418,6 +271,7 @@ def extract_and_return_data_from_places(places_of_interest):
                     'place_name': place_name,
                     'place_lat': place_lat,
                     'place_lon': place_lon,
+                    
                 })
  
     return extracted_data

@@ -49,22 +49,25 @@ with st.spinner("⏳ กำลังโหลดข้อมูล..."):
 
         # 3. ค้นหาสถานที่ที่น่าสนใจจากเส้นทาง
         places_of_interest = search_places_of_interest(route_path_list, keyword, radius)
-        print("Places of Interest:", places_of_interest)
 status_placeholder.text("การค้นหาสถานที่เสร็จสิ้นแล้ว")
 
-# 4. แสดงแผนที่
-extracted_data = extract_and_return_data_from_places(places_of_interest) 
-# แสดงแผนที่ longdo map
+
 route_markers = [
     { "lon": flon, "lat": flat, "title": "จุดเริ่มต้น"  },
     { "lon": tlon, "lat": tlat, "title": "จุดปลายทาง" }
 ]
 
-poi_markers = [
-    {"lon": place["place_lon"], "lat": place["place_lat"], "title": place["place_name"]}
-    for place in extracted_data
-]
+poi_markers = []
+seen = set()
+
+for place in places_of_interest:
+    key = (place["place_lon"], place["place_lat"], place["place_name"])     
+    if key not in seen:
+        seen.add(key)
+        poi_markers.append({"lon": place["place_lon"], "lat": place["place_lat"], "title": place["place_name"]})
+
 # แปลงเป็น JSON
+
 poi_markers_js = json.dumps(poi_markers, ensure_ascii=False)
 route_markers_js = json.dumps(route_markers, ensure_ascii=False)
 
@@ -74,16 +77,16 @@ print("route_markers_js",route_markers_js)
 # เรียกใช้ฟังก์ชันแสดงแผนที่
 DisplayMap(poi_markers_js, route_markers_js)
 
-# 5. แสดงคำอธิบายเส้นทางการเดินทาง
-explanation = explain_route_with_llm(route_data)
-st.write(f"LLM Explanation: {explanation}")  # ตรวจสอบคำอธิบายจาก LLM
-display_route_explanation(explanation)  # แสดงคำอธิบายการเดินทาง
+# # 5. แสดงคำอธิบายเส้นทางการเดินทาง
+# explanation = explain_route_with_llm(route_data)
+# st.write(f"LLM Explanation: {explanation}")  # ตรวจสอบคำอธิบายจาก LLM
+# display_route_explanation(explanation)  # แสดงคำอธิบายการเดินทาง
 
-# 6. แนะนำสถานที่ด้วย LLM
-if poi_markers and places_of_interest:
-    recommendations = recommend_places(poi_markers, places_of_interest, keyword)
-    st.write("คำแนะนำสถานที่ที่ดีที่สุดจากเส้นทาง:")
-    st.markdown(recommendations)  # แสดงคำแนะนำจาก LLM
-else:
-    st.warning("ไม่สามารถแนะนำสถานที่ได้เนื่องจากไม่มีข้อมูลที่เพียงพอ")
+# # 6. แนะนำสถานที่ด้วย LLM
+# if poi_markers and places_of_interest:
+#     recommendations = recommend_places(poi_markers, places_of_interest, keyword)
+#     st.write("คำแนะนำสถานที่ที่ดีที่สุดจากเส้นทาง:")
+#     st.markdown(recommendations)  # แสดงคำแนะนำจาก LLM
+# else:
+#     st.warning("ไม่สามารถแนะนำสถานที่ได้เนื่องจากไม่มีข้อมูลที่เพียงพอ")
 

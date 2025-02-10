@@ -9,7 +9,7 @@ import folium
 import streamlit as st
 from streamlit.components.v1 import html
 from langchain_core.tools import StructuredTool
-from function_routes import DisplayMap, convert_locations, display_route_explanation, explain_route_with_llm, get_route_data, get_route_path_from_id, process_places_of_interest_routes, recommend_places, search_places_of_interest
+from function_routes import DisplayMap, convert_locations, get_route_data, get_route_path_from_id, process_places_of_interest_routes, recommend_places, search_places_of_interest
 
 # กำหนดค่า API และ URL สำหรับการเชื่อมต่อ LLM
 url = 'http://111.223.37.52/v1'
@@ -109,7 +109,7 @@ def find_route(places_interest, user_location, user_destination, radius):
         route_path_list = get_route_path_from_id(route_id)
 
         # 3. ค้นหาสถานที่ที่น่าสนใจจากเส้นทาง
-        places_of_interest = search_places_of_interest(route_path_list, keyword, radius)
+        places_of_interest, check_point = search_places_of_interest(route_path_list, keyword, radius, places_interest)
         if not places_of_interest:
             return None  # ถ้าไม่พบสถานที่ที่น่าสนใจ
 
@@ -120,14 +120,6 @@ def find_route(places_interest, user_location, user_destination, radius):
         ]
         
         poi_markers = []
-        seen = set()
-
-        # กรองสถานที่ที่ไม่ซ้ำกัน
-        for place in places_of_interest:
-            key = (place["place_lon"], place["place_lat"], place["place_name"])
-            if key not in seen:
-                seen.add(key)
-                poi_markers.append({"lon": place["place_lon"], "lat": place["place_lat"], "title": place["place_name"]})
 
         # แปลงเป็น JSON
         poi_markers_js = json.dumps(poi_markers, ensure_ascii=False)
@@ -136,14 +128,14 @@ def find_route(places_interest, user_location, user_destination, radius):
         # 5. แสดงแผนที่
         DisplayMap(poi_markers_js, route_markers_js)
 
-        # 6. แสดงคำอธิบายเส้นทางการเดินทาง
-        explanation = explain_route_with_llm(route_data)
-        with st.expander("🗺️ คำอธิบายเส้นทางจาก LLM"):
-            st.write(f"LLM Explanation: {explanation}")
-            display_route_explanation(explanation)
+        # # 6. แสดงคำอธิบายเส้นทางการเดินทาง
+        # explanation = explain_route_with_llm(route_data)
+        # with st.expander("🗺️ คำอธิบายเส้นทางจาก LLM"):
+        #     st.write(f"LLM Explanation: {explanation}")
+        #     display_route_explanation(explanation)
 
         # 7. แนะนำสถานที่ด้วย LLM
-        recommendations = recommend_places(poi_markers, places_of_interest, keyword)
+        recommendations = recommend_places(places_of_interest, keyword)
         with st.expander("📍 คำแนะนำสถานที่ที่ดีที่สุดจากเส้นทาง"):
             st.write("นี่คือสถานที่ที่แนะนำตามเส้นทางของคุณ:")
             st.markdown(recommendations)

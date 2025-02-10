@@ -247,26 +247,28 @@ def chat_with_api():
                 st.write(system_reply)
 
             elif question_type == "route":
-                    # ตรวจสอบค่าต่างๆ ว่ามีหรือไม่
-                    if not user_location or not radius or not search_query or not user_destination:
-                        st.session_state.messages.append({"role": "System", "content": "Please provide valid inputs for location, radius, search query, and destination."})
-                        return
-                    
-                    # เก็บข้อความจากผู้ใช้
-                    user_message = f"Location: {user_location}, Radius: {radius} km, Search Query: {search_query}, Destination: {user_destination}"
-                    st.session_state.messages.append({"role": "User", "content": user_message})
+                # ตรวจสอบค่าต่างๆ ว่ามีหรือไม่
+                if not user_location or not radius or not search_query or not user_destination:
+                    st.session_state.messages.append({"role": "System", "content": "Please provide valid inputs for location, radius, search query, and destination."})
+                    return
+                
+                # เก็บข้อความจากผู้ใช้
+                user_message = f"Location: {user_location}, Radius: {radius} km, Search Query: {search_query}, Destination: {user_destination}"
+                st.session_state.messages.append({"role": "User", "content": user_message})
 
-                    # แยกตำแหน่งจากข้อความ (เช่น "14.022788, 99.978337" เป็น tuple (14.022788, 99.978337))
-                    try:
-                        user_lat, user_lon = map(float, user_location.split(","))
-                        destination_lat, destination_lon = map(float, user_destination.split(","))
-                    except ValueError:
-                        st.session_state.messages.append({"role": "System", "content": "Invalid location or destination format. Please enter latitude, longitude."})
-                        return
+                # แยกตำแหน่งจากข้อความ (เช่น "14.022788, 99.978337" เป็น tuple (14.022788, 99.978337))
+                try:
+                    user_lat, user_lon = map(float, user_location.split(","))
+                    destination_lat, destination_lon = map(float, user_destination.split(","))
+                except ValueError:
+                    st.session_state.messages.append({"role": "System", "content": "Invalid location or destination format. Please enter latitude, longitude."})
+                    return
 
-                    # เรียกใช้ฟังก์ชัน find_route สำหรับการค้นหาเส้นทางและสถานที่ที่น่าสนใจ
-                    route_data, places_of_interest = find_route(places_interest, (user_lat, user_lon), (destination_lat, destination_lon), radius)
-                    
+                # เรียกใช้ฟังก์ชัน find_route สำหรับการค้นหาเส้นทางและสถานที่ที่น่าสนใจ
+                result = find_route(places_interest, (user_lat, user_lon), (destination_lat, destination_lon), radius)
+                
+                if result:
+                    route_data, places_of_interest = result
                     if not route_data or not places_of_interest:
                         system_reply = f"No route or places of interest found matching your search query: '{search_query}' within {radius} km of {user_location}."
                         st.session_state.messages.append({"role": "System", "content": system_reply})
@@ -275,6 +277,10 @@ def chat_with_api():
                         system_reply = f"Found route and places of interest matching your search query: '{search_query}' within {radius} km of {user_location}."
                         st.session_state.messages.append({"role": "System", "content": system_reply})
                         st.write(system_reply)
+                else:
+                    system_reply = "Unable to find a valid route or places of interest."
+                    st.session_state.messages.append({"role": "System", "content": system_reply})
+                    st.write(system_reply)
                     
 # เรียกใช้ฟังก์ชัน chat_with_api ใน Streamlit
 if __name__ == "__main__":

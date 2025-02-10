@@ -1,14 +1,15 @@
 import math
 import time
-import streamlit as st
+from typing import List
 import requests
 import urllib.parse
 from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import JsonOutputParser
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import streamlit.components.v1 as components 
-
+from datetime import datetime
+import pytz 
 
 # Define a model for keyword extraction
 class SearchKeyword(BaseModel):
@@ -22,7 +23,6 @@ llm = ChatOpenAI(
     model="gpt-4o-mini",
     base_url=url,
     api_key=api_key,
-    max_tokens=1000
 )
 
 def clean_keyword(keyword: str):
@@ -31,34 +31,25 @@ def clean_keyword(keyword: str):
 def process_places_of_interest_routes(places_interest):
     try:
         parser = JsonOutputParser(pydantic_object=SearchKeyword)
-        format_instructions = """
-        คุณต้องกรองคำสำคัญจากคำขอของผู้ใช้.
-        คำขอของผู้ใช้คือ: {places_of_interest}
-        คำสำคัญที่คุณต้องการหาคือสิ่งที่เกี่ยวข้องกับการค้นหาหรือการกระทำที่ผู้ใช้ต้องการ เช่น:
-        - ต้องการทานข้าวหรือแวะพักทานอาหาร: "ร้านอาหาร"
-        - ต้องการทานกาแฟ: "ร้านกาแฟ"
-        - หากผู้ใช้ต้องการหาห้องน้ำ: "ห้องน้ำ"
-        - หากผู้ใช้ต้องการเติมน้ำมัน: "ปั๊มน้ำมัน"
-        - หากผู้ใช้ต้องการซื้อของฝาก: "ร้านขายของฝาก"
-        - หากผู้ใช้ต้องการซื้อของ: "ร้านสะดวกซื้อ"
-        - หากผู้ใช้ต้องการสถานที่แวะพักระหว่างการเดินทาง: "สถานที่พัก"
-        กรุณาตอบคำสำคัญที่พบในคำขอนี้ในรูปแบบ JSON ตามตัวอย่างนี้:
-        {
-            "keyword": "<extracted_keyword>"
-        }
-        """
-        
+ 
         prompt = PromptTemplate(
             template="""\
             ## คุณมีหน้าที่กรองคำสำคัญจากคำขอผู้ใช้.
 
             # คำขอผู้ใช้: {places_of_interest}
-
+            คำสำคัญที่คุณต้องการหาคือสิ่งที่เกี่ยวข้องกับการค้นหาหรือการกระทำที่ผู้ใช้ต้องการ เช่น:
+                - ต้องการทานข้าวหรือแวะพักทานอาหาร: "ร้านอาหาร"
+                - ต้องการทานกาแฟ: "ร้านกาแฟ"
+                - หากผู้ใช้ต้องการหาห้องน้ำ: "ห้องน้ำ"
+                - หากผู้ใช้ต้องการเติมน้ำมัน: "ปั๊มน้ำมัน"
+                - หากผู้ใช้ต้องการซื้อของฝาก: "ร้านขายของฝาก"
+                - หากผู้ใช้ต้องการซื้อของ: "ร้านสะดวกซื้อ"
+                - หากผู้ใช้ต้องการสถานที่แวะพักระหว่างการเดินทาง: "สถานที่พัก"
             # Your response should be structured as follows:
             {format_instructions}
             """,
             input_variables=["places_of_interest"],
-            partial_variables={"format_instructions": format_instructions},
+            partial_variables={"format_instructions": parser.get_format_instructions()},
         )
 
         chain = prompt | llm | parser
@@ -111,25 +102,13 @@ def get_route_data(flon, flat, tlon, tlat):
         print(f"Error fetching route data: {e}")
     return None
 
-# เราจะเอาค่าของ get_route_data มาทำการวนลูปหาเส้นทาง
 def get_route_path_from_id(id):
     route_path_list = []
     try:
-        
-        print("id",id)
+       
         base_url = f"https://api.longdo.com/RouteService/json/route/path?id={id}"
-
         response = requests.get(base_url)
-   
         route_path_data = response.json()
-
-        # # แสดงข้อมูลเส้นทางที่ได้
-        # print("Route Path Data:", route_path_data)
-
-        # # เก็บข้อมูลเส้นทางใน route_path_list
-        # if route_path_data:
-        #     route_path_list.append(route_path_data)
-        #print(route_path_list)
         return route_path_data
     except requests.exceptions.RequestException as e:
         print(f"Error fetching route path data: {e}")
@@ -142,23 +121,27 @@ def search_interest_logdo_map_api(keyword, location, radius):
             'key': '7b6f8a4c53a57fa8315fbdcf5b108c83',
             'lon': location[1],
             'lat': location[0],
-            'span': radius,
+            'span': '150m',
             'keyword': keyword
     }
 
         response = requests.get(base_url, params=params)
-        time.sleep(0.5)  
+        print(response)
+        time.sleep(0.3)  
+
         return response.json()
     except requests.exceptions.RequestException as e:
         print(f"Error fetching data from Longdo API: {e}")
     return None
 
-def search_places_of_interest(route_path_list, keyword, radius):    
+def search_places_of_interest(route_path_list, keyword, radius, places_interest):    
     places_of_interest=[]
     for add in route_path_list['data']:
-        middle_index = math.floor(len(add) / 2) 
-        # LLm เช็ค
-        selected_places = [add[0], add[middle_index], add[-1]]        
+         # LLm เช็ค
+        # selected_places = [add[0], add[middle_index], add[-1]]              
+        selected_places = [add[i] for i in range(0, len(add), 15)]
+   
+    
         for place in selected_places:
             latitude = place["lat"]
             longitude = place["lon"]
@@ -166,7 +149,74 @@ def search_places_of_interest(route_path_list, keyword, radius):
             ddot = extract_and_return_data_from_places(found_places)
 
             places_of_interest.extend(ddot)
-    return places_of_interest
+
+    rec = []
+    seen = set()
+    check_point = [] 
+    rec = []   
+
+    for place in places_of_interest:
+        key = (place["lon"], place["lat"], place["name"])
+        
+        if key not in seen:
+            seen.add(key) 
+            check_point.append({
+                "lon": place["lon"],
+                "lat": place["lat"],
+                "title": place["name"]
+            })
+            
+            rec.append({
+                "name": place["name"], 
+                "working_hours": place.get("working_hours", None),
+                "tag": place.get("tag", None),
+                "url": place.get("url", None),
+                "address": place.get("address", None),
+                "tel": place.get("tel", None),
+                "url" :place.get("tel", None),
+            })
+ 
+    class ModelGuide(BaseModel):
+        name: str = Field(description="ชื่อสถานที่")
+        recommend: str = Field(description="แนะนำเพราะอะไร ขอรายละเอียดเยอะในระดับหนึ่ง รายละเอียดที่อยากได้ เวลาตอนนี้อยู่ในช่วงเวลาทำการ หรืออาจแนะนำว่า เพราะสถานที่ตรงร้านน่าสนใจ หรืออื่นๆให้สอดคล้องกับข้อความจากผู้ใช้")
+
+    class Guide(BaseModel):
+        guide: List[ModelGuide] = Field(description="ลิสต์ของสถานที่ที่แนะนำ")
+            
+    parser = JsonOutputParser(pydantic_object=Guide)
+ 
+    prompt = PromptTemplate(
+            template="""\
+            ## ตอนนี้คุณเป็นเหมือนไกด์ ที่จะแนะนำ สถานที่ตามข้อความจาก ผู้ใช้ และข้อมูลสถานที่ที่มี โดย แนะนำไม่เกิน 5 สถานที่. หากร้านไหนมีระบุเวลาเปิดปิด ตรงกับเวลาตอนนี้จะแนะนำเป็นพิเศษ
+            # เวลาตอนนี้ : {date}
+
+            # ข้อความจาก ผู้ใช้: {places_interest}
+            
+            ## ข้อมูลสถานที่ : 
+            {data}
+
+            # Your response should be structured as follows:
+            {format_instructions}
+            """,
+            input_variables=["data", "places_interest", "date"],
+            partial_variables={"format_instructions": parser.get_format_instructions()},
+        )
+    
+    thailand_tz = pytz.timezone('Asia/Bangkok')
+
+    now = datetime.now(thailand_tz)
+
+    day_of_week = now.strftime('%A') 
+    # day_of_week_thai = {
+    #     "Monday": "จันทร์", "Tuesday": "อังคาร", "Wednesday": "พุธ", "Thursday": "พฤหัส", 
+    #     "Friday": "ศุกร์", "Saturday": "เสาร์", "Sunday": "อาทิตย์"
+    # }.get(day_of_week, day_of_week)
+    time_str = now.strftime('%H:%M')
+ 
+    chain = prompt | llm | parser
+    event = chain.invoke({"data": rec, "places_interest": places_interest, "date": f"{day_of_week} timenow: {time_str}" })
+    print(event["guide"])
+    return event["guide"], check_point
 
 # แผนที่ที่ใช้โดย Longdo map
 def DisplayMap(poi_markers_js, route_markers_js):
@@ -257,20 +307,11 @@ def extract_and_return_data_from_places(places_of_interest):
         data_list = places_of_interest.get("data", [])
         
         if data_list: 
-            selected_places = [data_list[0], data_list[-1]]
-            for val in selected_places:
-                place_name = val.get("name", "")
-                place_lat = val.get("lat", "")
-                place_lon = val.get("lon", "")
-                extracted_data.append({
-                    'place_name': place_name,
-                    'place_lat': place_lat,
-                    'place_lon': place_lon,
-                    
-                })
+            for val in data_list:
+                extracted_data.append(val)
  
     return extracted_data
-def recommend_places(places_with_coordinates, places_of_interest, keyword):
+def recommend_places(places_of_interest, keyword):
     """
     ใช้ LLM วิเคราะห์และแนะนำสถานที่ โดยไม่ต้องคำนวณระยะทาง
 
@@ -321,88 +362,4 @@ def recommend_places(places_with_coordinates, places_of_interest, keyword):
         # จับข้อผิดพลาดที่เกิดขึ้นจากการเรียกใช้ LLM
         print(f"Error generating recommendation: {e}")
         return "เกิดข้อผิดพลาดในการให้คำแนะนำ."
-
-def explain_route_with_llm(route_data):
-    # ตรวจสอบว่าข้อมูลไม่เป็น None และมีโครงสร้างที่ถูกต้อง
-    if not route_data or 'data' not in route_data or not route_data['data']:
-        return "❌ ไม่มีข้อมูลเส้นทาง"
-
-    first_route = route_data['data'][0]
-    if 'guide' not in first_route or not first_route['guide']:
-        return "❌ ไม่มีคำแนะนำเส้นทาง"
-
-    # 🔹 แปลง TurnCode เป็นข้อความที่เข้าใจง่าย
-    turn_code_mapping = {
-        0: "เลี้ยวซ้าย",
-        1: "เลี้ยวขวา",
-        2: "เลี้ยวซ้ายเล็กน้อย",
-        3: "เลี้ยวขวาเล็กน้อย",
-        4: "ทิศทางไม่ระบุ",
-        5: "ตรงไป",
-        6: "เข้าสู่ทางด่วน",
-        9: "ถึงที่หมาย",
-        11: "เดินทางโดยเรือเฟอร์รี่"
-    }
-
-    route_steps = []
-    total_distance = 0  # ระยะทางรวม
-    total_time = 0       # เวลารวม
-
-    for instruction in first_route['guide']:
-        turn_code = instruction.get('turn', 4)  # ค่าเริ่มต้นคือ "ทิศทางไม่ระบุ"
-        turn = turn_code_mapping.get(turn_code, "ไม่ระบุทิศทาง")
-        name = instruction.get('name', 'ไม่ระบุ')
-        distance = instruction.get('distance', 0)  # ระยะทาง (เมตร)
-        interval = instruction.get('interval', 0)  # เวลา (วินาที)
-
-        total_distance += distance
-        total_time += interval
-
-        step = f"🔹 {turn} ไปที่ {name}, ระยะทาง {distance} เมตร, ใช้เวลา {interval} วินาที"
-        route_steps.append(step)
-
-    # แปลงหน่วยของระยะทางและเวลา
-    total_distance_km = total_distance / 1000  # แปลงเมตรเป็นกิโลเมตร
-    total_time_min = total_time / 60  # แปลงวินาทีเป็นนาที
-
-    route_description = "\n".join(route_steps)
-
-    print(f"✅ Route description generated:\n{route_description}")  # Debug
-
-    # 🔹 สร้าง Prompt ให้ LLM
-    prompt = f"""
-        นี่คือคำแนะนำการเดินทาง:
-
-        {route_description}
-
-        ข้อมูลเสริม:
-        - ระยะทางรวม: {total_distance_km:.2f} กิโลเมตร
-        - เวลาทั้งหมด: {total_time_min:.1f} นาที
-
-        กรุณาอธิบายเส้นทางให้อ่านง่ายสำหรับคนที่ไม่เคยไปมาก่อน โดยให้ข้อมูลการเดินทางในรูปแบบดังนี้:
-
-        1. เริ่มต้นที่ [ชื่อจุดเริ่มต้น]
-        2. เดินทางไปที่ [ชื่อถนนหรือสถานที่]
-            - ระยะทาง: [ระยะทางเป็นเมตร] เมตร (ใช้เวลา [เวลาเป็นวินาที/นาที])
-        3. [รายละเอียดเพิ่มเติมเกี่ยวกับจุดถัดไป]
-            - ระยะทาง: [ระยะทาง] เมตร (ใช้เวลา [เวลา])
-        4. ต่อไปในลักษณะเดียวกันสำหรับทุกจุด
-
-        สรุปรวมทั้งหมด:
-        - ระยะทางทั้งหมดที่เดินทาง จากจุดเริ่มต้นมายังจุดหมายปลายทาง คือ [รวมระยะทางทั้งหมด] เมตร/กิโลเมตร (แปลงจากเมตรเป็นกิโลเมตรถ้ามากกว่า 1000 เมตร)
-        - เวลาที่ใช้ในการเดินทางทั้งหมดคือ [รวมเวลา] นาที (ถ้ามากกว่า 60 นาที ให้แสดงเป็นชั่วโมง เช่น 1 ชม. 30 นาที)
-        """
-    try:
-        if hasattr(llm, 'invoke'):
-            response = llm.invoke(prompt)
-            return response.content.strip()
-        else:
-            return "❌ LLM ไม่พร้อมใช้งาน"
-    except Exception as e:
-        print(f"❌ Error generating description: {e}")
-        return "❌ เกิดข้อผิดพลาดในการอธิบายเส้นทาง"
-
-# ฟังก์ชันการแสดงคำอธิบายการเดินทาง
-def display_route_explanation(route_data):
-    explanation = explain_route_with_llm(route_data)
-    print("📌 คำอธิบายเส้นทางจาก LLM:", explanation)
+ 

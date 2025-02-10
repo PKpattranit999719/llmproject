@@ -119,10 +119,9 @@ def find_route(places_interest, user_location, user_destination, radius):
             { "lon": tlon, "lat": tlat, "title": "จุดปลายทาง" }
         ]
         
-        poi_markers = []
-
+        print(check_point)
         # แปลงเป็น JSON
-        poi_markers_js = json.dumps(poi_markers, ensure_ascii=False)
+        poi_markers_js = json.dumps(check_point, ensure_ascii=False)
         route_markers_js = json.dumps(route_markers, ensure_ascii=False)
 
         # 5. แสดงแผนที่

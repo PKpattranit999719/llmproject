@@ -311,6 +311,7 @@ def extract_and_return_data_from_places(places_of_interest):
                 extracted_data.append(val)
  
     return extracted_data
+
 def recommend_places(places_of_interest, keyword):
     """
     ใช้ LLM วิเคราะห์และแนะนำสถานที่ โดยไม่ต้องคำนวณระยะทาง

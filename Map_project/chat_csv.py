@@ -1,4 +1,5 @@
 import streamlit as st
+from function_api import find_route
 from function_csv import load_data, filter_data_by_distance, filter_data_by_categories, generate_recommendation, create_and_display_map  # Import ฟังก์ชันจากไฟล์ function_csv
 from langchain_openai import ChatOpenAI
 import requests
@@ -133,7 +134,8 @@ def chat_with_csv():
                 
             radius = st.number_input("Enter the search radius (in kilometers):", min_value=1, max_value=100, value=10, key="radius_input")
             search_query = st.text_input("Enter your search query (e.g., 'อยากเดินทางจากพระราม9ไปวัดพระแก้ว', 'จากกรุงเทพไปกำแพงแสน'):", value=user_query, key="search_input")
-    
+            places_interest = st.text_input("Enter your place interest(สถานที่ที่อยากแวะ หรือ สนใจระหว่างทาง e.g.'ต้องการทานข้าวหรือแวะพักทานอาหาร')", key="places_interest")
+            
         elif question_type == "place":
             st.header("กรอกข้อมูลสำหรับการค้นหาสถานที่")   
             user_location = st.text_input("Enter your location (latitude, longitude):", key="location_input")
@@ -198,46 +200,84 @@ def chat_with_csv():
             search_query = st.text_input("Enter your search query (e.g., 'ช่วยหาแหล่งท่องเที่ยวทางธรรมชาติ', 'พิพิธภัณฑ์'):",value=user_query, key="search_input")
     
         if st.button("Search"):
-        # เก็บข้อความจากผู้ใช้
-            user_message = f"Location: {user_location}, Radius: {radius} km, Search Query: {search_query}"
-            st.session_state.messages.append({"role": "User", "content": user_message})
+            if question_type == "place":
+            # เก็บข้อความจากผู้ใช้
+                user_message = f"Location: {user_location}, Radius: {radius} km, Search Query: {search_query}"
+                st.session_state.messages.append({"role": "User", "content": user_message})
 
-            # ตรวจสอบว่า user_location มีข้อมูลหรือไม่
-            if user_location and radius and search_query:
-                # แยกตำแหน่งจากข้อความ (เช่น "14.022788, 99.978337" เป็น tuple (14.022788, 99.978337))
-                user_lat, user_lon = map(float, user_location.split(","))
+                # ตรวจสอบว่า user_location มีข้อมูลหรือไม่
+                if user_location and radius and search_query:
+                    # แยกตำแหน่งจากข้อความ (เช่น "14.022788, 99.978337" เป็น tuple (14.022788, 99.978337))
+                    user_lat, user_lon = map(float, user_location.split(","))
 
-                # โหลดข้อมูลจากไฟล์ CSV
-                df = load_data("C:/llmproject/Map_project/splitData.csv")
+                    # โหลดข้อมูลจากไฟล์ CSV
+                    df = load_data("C:/llmproject/Map_project/splitData.csv")
 
-                # กรองข้อมูลตามระยะทาง
-                sorted_filtered_df = filter_data_by_distance(df, (user_lat, user_lon), radius)
+                    # กรองข้อมูลตามระยะทาง
+                    sorted_filtered_df = filter_data_by_distance(df, (user_lat, user_lon), radius)
 
-                # กรองข้อมูลด้วยคำค้นหาจากผู้ใช้
-                unique_attr_sub_types = sorted_filtered_df['ATTR_SUB_TYPE_TH'].drop_duplicates().tolist()
-                filtered_df = filter_data_by_categories(llm, search_query, unique_attr_sub_types, sorted_filtered_df)
+                    # กรองข้อมูลด้วยคำค้นหาจากผู้ใช้
+                    unique_attr_sub_types = sorted_filtered_df['ATTR_SUB_TYPE_TH'].drop_duplicates().tolist()
+                    filtered_df = filter_data_by_categories(llm, search_query, unique_attr_sub_types, sorted_filtered_df)
 
-                # ถ้ามีข้อมูลที่กรองแล้ว
-                if not filtered_df.empty:
-                    system_reply = f"Found {len(filtered_df)} places matching your search query: {search_query} within {radius} km of {user_location}."
-                    
-                    # แสดงแผนที่ทั้งหมด
-                    create_and_display_map(filtered_df, user_location=(user_lat, user_lon))
+                    # ถ้ามีข้อมูลที่กรองแล้ว
+                    if not filtered_df.empty:
+                        system_reply = f"Found {len(filtered_df)} places matching your search query: {search_query} within {radius} km of {user_location}."
+                        
+                        # แสดงแผนที่ทั้งหมด
+                        create_and_display_map(filtered_df, user_location=(user_lat, user_lon))
 
-                    # แสดงคำแนะนำ
-                    recommendation = generate_recommendation(llm, filtered_df.head(5))  # เรียกใช้ฟังก์ชันจาก function_csv.py
-                    st.write("**Recommendation for places to visit:**")
-                    st.write(recommendation)
+                        # แสดงคำแนะนำ
+                        recommendation = generate_recommendation(llm, filtered_df.head(5))  # เรียกใช้ฟังก์ชันจาก function_csv.py
+                        st.write("**Recommendation for places to visit:**")
+                        st.write(recommendation)
+                    else:
+                        system_reply = f"No places found matching your search query: {search_query} within {radius} km of {user_location}."
                 else:
-                    system_reply = f"No places found matching your search query: {search_query} within {radius} km of {user_location}."
-            else:
-                system_reply = "Please provide valid inputs for location, radius, and search query."
+                    system_reply = "Please provide valid inputs for location, radius, and search query."
 
-            # เก็บข้อความตอบกลับจากระบบ
-            st.session_state.messages.append({"role": "System", "content": system_reply})
+                # เก็บข้อความตอบกลับจากระบบ
+                st.session_state.messages.append({"role": "System", "content": system_reply})
 
-            # แสดงผลลัพธ์ที่กรองได้
-            st.write(system_reply)
+                # แสดงผลลัพธ์ที่กรองได้
+                st.write(system_reply)
+                
+            elif question_type == "route":
+                # ตรวจสอบค่าต่างๆ ว่ามีหรือไม่
+                if not user_location or not radius or not search_query or not user_destination:
+                    st.session_state.messages.append({"role": "System", "content": "Please provide valid inputs for location, radius, search query, and destination."})
+                    return
+                
+                # เก็บข้อความจากผู้ใช้
+                user_message = f"Location: {user_location}, Radius: {radius} km, Search Query: {search_query}, Destination: {user_destination}"
+                st.session_state.messages.append({"role": "User", "content": user_message})
+
+                # แยกตำแหน่งจากข้อความ (เช่น "14.022788, 99.978337" เป็น tuple (14.022788, 99.978337))
+                try:
+                    user_lat, user_lon = map(float, user_location.split(","))
+                    destination_lat, destination_lon = map(float, user_destination.split(","))
+                except ValueError:
+                    st.session_state.messages.append({"role": "System", "content": "Invalid location or destination format. Please enter latitude, longitude."})
+                    return
+
+                # เรียกใช้ฟังก์ชัน find_route สำหรับการค้นหาเส้นทางและสถานที่ที่น่าสนใจ
+                result = find_route(places_interest, (user_lat, user_lon), (destination_lat, destination_lon), radius)
+                
+                if result:
+                    route_data, places_of_interest = result
+                    if not route_data or not places_of_interest:
+                        system_reply = f"No route or places of interest found matching your search query: '{search_query}' within {radius} km of {user_location}."
+                        st.session_state.messages.append({"role": "System", "content": system_reply})
+                        st.write(system_reply)
+                    else:
+                        system_reply = f"Found route and places of interest matching your search query: '{search_query}' within {radius} km of {user_location}."
+                        st.session_state.messages.append({"role": "System", "content": system_reply})
+                        st.write(system_reply)
+                else:
+                    system_reply = "Unable to find a valid route or places of interest."
+                    st.session_state.messages.append({"role": "System", "content": system_reply})
+                    st.write(system_reply) 
+                      
 # เรียกใช้ฟังก์ชัน chat_with_csv ใน Streamlit
 if __name__ == "__main__":
     chat_with_csv()

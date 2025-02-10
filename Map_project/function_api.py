@@ -281,16 +281,7 @@ def display_recommendations(places_data, user_query=None):
         st.write(response.content.strip())
     except Exception as e:
         st.error(f"เกิดข้อผิดพลาดในการวิเคราะห์ข้อมูล: {str(e)}")
-
-# # ฟังก์ชันหลักสำหรับการค้นหาและแสดงผล
-# def main(user_query, user_location, radius):
-#     keyword, places_from_api = process_user_query(user_query, user_location, radius)
-#     if keyword:
-#         # print(f"คำค้นหา: {keyword}")
-#         display_places_list(places_from_api)
-#         create_and_display_map(places_from_api, user_location)
-#     else:
-#         print("ไม่พบคำสำคัญจากการประมวลผล")
+        
 def main(user_query, user_location, radius, user_destination=None, places_interest=None):
     keyword, places_from_api = process_user_query(user_query, user_location, radius)
     

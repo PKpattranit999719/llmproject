@@ -1,4 +1,5 @@
 import math
+import re
 import time
 from typing import List
 import requests
@@ -363,4 +364,3 @@ def recommend_places(places_of_interest, keyword):
         # จับข้อผิดพลาดที่เกิดขึ้นจากการเรียกใช้ LLM
         print(f"Error generating recommendation: {e}")
         return "เกิดข้อผิดพลาดในการให้คำแนะนำ."
- 

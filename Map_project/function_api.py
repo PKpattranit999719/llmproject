@@ -9,7 +9,7 @@ import folium
 import streamlit as st
 from streamlit.components.v1 import html
 from langchain_core.tools import StructuredTool
-from function_routes import DisplayMap, convert_locations, get_route_data, get_route_path_from_id, process_places_of_interest_routes, recommend_places, search_places_of_interest
+from function_routes import DisplayMap, convert_locations, display_route_explanation, explain_route_with_llm, get_route_data, get_route_path_from_id, process_places_of_interest_routes, recommend_places, search_places_of_interest
 
 # กำหนดค่า API และ URL สำหรับการเชื่อมต่อ LLM
 url = 'http://111.223.37.52/v1'
@@ -127,11 +127,18 @@ def find_route(places_interest, user_location, user_destination, radius):
         # 5. แสดงแผนที่
         DisplayMap(poi_markers_js, route_markers_js)
 
-        # # 6. แสดงคำอธิบายเส้นทางการเดินทาง
-        # explanation = explain_route_with_llm(route_data)
-        # with st.expander("🗺️ คำอธิบายเส้นทางจาก LLM"):
-        #     st.write(f"LLM Explanation: {explanation}")
-        #     display_route_explanation(explanation)
+        # 6. แสดงคำอธิบายเส้นทางการเดินทาง
+        explanation = explain_route_with_llm(route_data)
+        with st.expander("🗺️ คำอธิบายเส้นทางจาก LLM"):
+            # แสดงคำอธิบายการเดินทางโดยใช้ st.markdown กับการอนุญาต HTML
+            st.markdown(f"""
+            <div style="max-height: 400px; overflow-y: auto; padding: 10px;">
+                LLM Explanation: {explanation}
+            </div>
+            """, unsafe_allow_html=True)
+
+            # หรือถ้าต้องการฟังก์ชันแสดงผลเส้นทางที่ละเอียดเพิ่มเติม
+            display_route_explanation(explanation)
 
         # 7. แนะนำสถานที่ด้วย LLM
         recommendations = recommend_places(places_of_interest, keyword)
@@ -267,10 +274,11 @@ def display_recommendations(places_data, user_query=None):
     # สร้างคำสั่งสำหรับ LLM
     prompt = f"""
     ต่อไปนี้คือสถานที่ที่พบจากคำค้นหา: "{user_query}"
-    
+        
     {places_description}
-    
-    กรุณาเปรียบเทียบสถานที่เหล่านี้ โดยระบุข้อดีและข้อเสียของแต่ละสถานที่ รวมถึงแนะนำสถานที่ที่เหมาะสมที่สุดสำหรับผู้ใช้งาน.
+        
+    กรุณาให้ข้อมูลเพิ่มเติมเกี่ยวกับแต่ละสถานที่ เช่น ความสะดวกในการเดินทาง, ความนิยม, และบริการต่างๆ ที่อาจมีให้ในแต่ละแห่ง โดยไม่ต้องสรุปเป็นข้อดีข้อเสีย รวมถึงแนะนำสถานที่ที่เหมาะสมที่สุดสำหรับผู้ใช้งาน.
+    คำแนะนำของคุณจะช่วยในการตัดสินใจเลือกสถานที่ท่องเที่ยวที่เหมาะสมที่สุด.
     """
 
     # ส่งคำสั่งไปยัง LLM
@@ -278,7 +286,8 @@ def display_recommendations(places_data, user_query=None):
         response = llm.invoke(prompt)
         # แสดงผลคำแนะนำจาก LLM
         st.subheader("Recommendation:")
-        st.write(response.content.strip())
+        with st.expander("📍 คำแนะนำสถานที่จาก LLM"):
+            st.write(response.content.strip())
     except Exception as e:
         st.error(f"เกิดข้อผิดพลาดในการวิเคราะห์ข้อมูล: {str(e)}")
         

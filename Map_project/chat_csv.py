@@ -220,28 +220,62 @@ def chat_with_csv():
                     unique_attr_sub_types = sorted_filtered_df['ATTR_SUB_TYPE_TH'].drop_duplicates().tolist()
                     filtered_df = filter_data_by_categories(llm, search_query, unique_attr_sub_types, sorted_filtered_df)
 
-                    # ถ้ามีข้อมูลที่กรองแล้ว
-                    if not filtered_df.empty:
-                        system_reply = f"Found {len(filtered_df)} places matching your search query: {search_query} within {radius} km of {user_location}."
+                #     # ถ้ามีข้อมูลที่กรองแล้ว
+                #     if not filtered_df.empty:
+                #         system_reply = f"Found {len(filtered_df)} places matching your search query: {search_query} within {radius} km of {user_location}."
                         
-                        # แสดงแผนที่ทั้งหมด
-                        create_and_display_map(filtered_df, user_location=(user_lat, user_lon))
+                #         # แสดงแผนที่ทั้งหมด
+                #         create_and_display_map(filtered_df, user_location=(user_lat, user_lon))
 
-                        # แสดงคำแนะนำ
-                        recommendation = generate_recommendation(llm, filtered_df.head(5))  # เรียกใช้ฟังก์ชันจาก function_csv.py
-                        st.write("**Recommendation for places to visit:**")
-                        st.write(recommendation)
-                    else:
-                        system_reply = f"No places found matching your search query: {search_query} within {radius} km of {user_location}."
+                #         # แสดงคำแนะนำ
+                #         recommendation = generate_recommendation(llm, filtered_df.head(5))  # เรียกใช้ฟังก์ชันจาก function_csv.py
+                #         st.write("**Recommendation for places to visit:**")
+                #         st.write(recommendation)
+                #     else:
+                #         system_reply = f"No places found matching your search query: {search_query} within {radius} km of {user_location}."
+                # else:
+                #     system_reply = "Please provide valid inputs for location, radius, and search query."
+
+                # ถ้ามีข้อมูลที่กรองแล้ว
+                if not filtered_df.empty:
+                    system_reply = f"Found {len(filtered_df)} places matching your search query: {search_query} within {radius} km of {user_location}."
+                    st.session_state.messages.append({"role": "System", "content": system_reply})
+                    st.write(system_reply)
+
+                    # แสดงแผนที่ทั้งหมด
+                    create_and_display_map(filtered_df, user_location=(user_lat, user_lon))
+
+                    # แสดงคำแนะนำ
+                    st.write("**Recommendation for places to visit:**")
+
+                    # ใช้ expander เพื่อแสดงข้อมูลสำหรับแต่ละสถานที่
+                    for index, row in filtered_df.head(5).iterrows():
+                        place_name = row['ATT_NAME_TH']
+                        place_type = row['ATTR_SUB_TYPE_TH']
+                        distance = row['DISTANCE']
+                        place_details = row['ATT_DETAIL_TH']
+
+                        # สร้าง expander สำหรับแต่ละสถานที่
+                        with st.expander(f"Place {index + 1}: {place_name}"):
+                            st.markdown(f"**ประเภท**: {place_type}")
+                            st.markdown(f"**ระยะทาง**: {distance:.2f} กม.")
+                            st.markdown(f"**รายละเอียด**: {place_details}")
+
+                    # เรียกใช้ฟังก์ชันแนะนำจาก LLM สำหรับสถานที่ทั้งหมดที่กรองมา
+                    recommendation = generate_recommendation(llm, filtered_df.head(5)) 
+
+                    # แสดงคำแนะนำรวมจาก LLM
+                    st.subheader("Recommendation:")
+                    with st.expander("📍 คำแนะนำสถานที่จาก LLM"):
+                        st.write("นี่คือสถานที่ที่แนะนำตามเส้นทางของคุณ:")
+                        st.markdown(recommendation)
+
+                    
                 else:
-                    system_reply = "Please provide valid inputs for location, radius, and search query."
-
-                # เก็บข้อความตอบกลับจากระบบ
-                st.session_state.messages.append({"role": "System", "content": system_reply})
-
-                # แสดงผลลัพธ์ที่กรองได้
-                st.write(system_reply)
-                
+                    system_reply = f"No places found matching your search query: {search_query} within {radius} km of {user_location}."
+                    st.session_state.messages.append({"role": "System", "content": system_reply})
+                    st.write(system_reply)
+               
             elif question_type == "route":
                 # ตรวจสอบค่าต่างๆ ว่ามีหรือไม่
                 if not user_location or not radius or not search_query or not user_destination:

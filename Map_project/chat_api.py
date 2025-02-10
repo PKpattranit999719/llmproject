@@ -264,24 +264,36 @@ def chat_with_api():
                     st.session_state.messages.append({"role": "System", "content": "Invalid location or destination format. Please enter latitude, longitude."})
                     return
 
-                # เรียกใช้ฟังก์ชัน find_route สำหรับการค้นหาเส้นทางและสถานที่ที่น่าสนใจ
-                result = find_route(places_interest, (user_lat, user_lon), (destination_lat, destination_lon), radius)
+                prompt = f"""
+                คำค้นหาผู้ใช้ : {search_query}
+                ตำแหน่ง : {user_lat},{user_lon}
+                รัศมี : {radius}
+                จุดหมายปลายทาง : {destination_lat},{destination_lon}
+                """
                 
-                if result:
-                    route_data, places_of_interest = result
-                    if not route_data or not places_of_interest:
-                        system_reply = f"No route or places of interest found matching your search query: '{search_query}' within {radius} km of {user_location}."
-                        st.session_state.messages.append({"role": "System", "content": system_reply})
-                        st.write(system_reply)
+                get_tool = create_tool()
+                llm_with_tool = llm.bind_tools(get_tool)
+                tools = llm_with_tool.invoke(prompt)
+                tool_call_data = tools.tool_calls
+                if tool_call_data[0]['name'] == "find_route":
+                # เรียกใช้ฟังก์ชัน find_route สำหรับการค้นหาเส้นทางและสถานที่ที่น่าสนใจ
+                    result = find_route(places_interest, (user_lat, user_lon), (destination_lat, destination_lon), radius)
+                
+                    if result:
+                        route_data, places_of_interest = result
+                        if not route_data or not places_of_interest:
+                            system_reply = f"No route or places of interest found matching your search query: '{search_query}' within {radius} km of {user_location}."
+                            st.session_state.messages.append({"role": "System", "content": system_reply})
+                            st.write(system_reply)
+                        else:
+                            system_reply = f"Found route and places of interest matching your search query: '{search_query}' within {radius} km of {user_location}."
+                            st.session_state.messages.append({"role": "System", "content": system_reply})
+                            st.write(system_reply)
                     else:
-                        system_reply = f"Found route and places of interest matching your search query: '{search_query}' within {radius} km of {user_location}."
+                        system_reply = "Unable to find a valid route or places of interest."
                         st.session_state.messages.append({"role": "System", "content": system_reply})
                         st.write(system_reply)
-                else:
-                    system_reply = "Unable to find a valid route or places of interest."
-                    st.session_state.messages.append({"role": "System", "content": system_reply})
-                    st.write(system_reply)
-                    
+                        
 # เรียกใช้ฟังก์ชัน chat_with_api ใน Streamlit
 if __name__ == "__main__":
     chat_with_api()

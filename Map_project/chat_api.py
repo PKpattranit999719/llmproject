@@ -1,6 +1,5 @@
 import streamlit as st
-from function_api import display_recommendations, process_user_query, create_and_display_map, display_places_list , create_tool, find_route# เรียกใช้ฟังก์ชันจาก function_api.py
-#from function_routes import display_route_explanation, explain_route_with_llm, create_map, recommend_places, sort_points
+from function_api import display_recommendations, process_user_query, create_and_display_map, display_places_list , create_tool, find_route
 import requests
 import urllib.parse
 from langchain_openai import ChatOpenAI
@@ -106,7 +105,7 @@ def chat_with_api():
                 # รับค่าชื่อสถานที่จากผู้ใช้
                 searched_location = st.text_input("Enter your searched location:")
 
-                if st.button("Search", key="search_button"):
+                if st.button("Search", key="search_button_1"):
                     if searched_location:  # ตรวจสอบว่าผู้ใช้กรอกข้อมูล
                         # สร้าง URL สำหรับการค้นหาด้วย Nominatim API
                         url = f'https://nominatim.openstreetmap.org/search?q={urllib.parse.quote(searched_location)}&format=json'
@@ -136,7 +135,7 @@ def chat_with_api():
             radius = st.number_input("Enter the search radius (in kilometers):", min_value=1, max_value=100, value=10, key="radius_input")
             search_query = st.text_input("Enter your search query (e.g., 'อยากเดินทางจากพระราม9ไปวัดพระแก้ว', 'จากกรุงเทพไปกำแพงแสน'):", value=user_query, key="search_input")
             places_interest = st.text_input("Enter your place interest(สถานที่ที่อยากแวะ หรือ สนใจระหว่างทาง e.g.'ต้องการทานข้าวหรือแวะพักทานอาหาร')", key="places_interest")
-            
+    
         elif question_type == "place":
             st.header("กรอกข้อมูลสำหรับการค้นหาสถานที่")   
             user_location = st.text_input("Enter your location (latitude, longitude):", key="location_input")
@@ -170,7 +169,7 @@ def chat_with_api():
                 # รับค่าชื่อสถานที่จากผู้ใช้
                 searched_location = st.text_input("Enter your searched location:")
 
-                if st.button("Search", key="search_button"):
+                if st.button("Search", key="search_button_2"):
                     if searched_location:  # ตรวจสอบว่าผู้ใช้กรอกข้อมูล
                         # สร้าง URL สำหรับการค้นหาด้วย Nominatim API
                         url = f'https://nominatim.openstreetmap.org/search?q={urllib.parse.quote(searched_location)}&format=json'
@@ -201,51 +200,82 @@ def chat_with_api():
             search_query = st.text_input("Enter your search query (e.g., 'ช่วยหาร้านกาแฟแถวนี้', 'ขอรายชื่อร้านอาหาร'):",value=user_query, key="search_input")
 
         if st.button("Search"):
-        # ตรวจสอบค่าต่างๆ ว่ามีหรือไม่
-            if not user_location or not radius or not search_query:
-                st.session_state.messages.append({"role": "System", "content": "Please provide valid inputs for location, radius, and search query."})
-                return
-            
-            # เก็บข้อความจากผู้ใช้
-            user_message = f"Location: {user_location}, Radius: {radius} km, Search Query: {search_query}"
-            st.session_state.messages.append({"role": "User", "content": user_message})
+            if question_type == "place":
+            # ตรวจสอบค่าต่างๆ ว่ามีหรือไม่
+                if not user_location or not radius or not search_query:
+                    st.session_state.messages.append({"role": "System", "content": "Please provide valid inputs for location, radius, and search query."})
+                    return
+                
+                # เก็บข้อความจากผู้ใช้
+                user_message = f"Location: {user_location}, Radius: {radius} km, Search Query: {search_query}"
+                st.session_state.messages.append({"role": "User", "content": user_message})
 
-            # แยกตำแหน่งจากข้อความ (เช่น "14.022788, 99.978337" เป็น tuple (14.022788, 99.978337))
-            try:
-                user_lat, user_lon = map(float, user_location.split(","))
-            except ValueError:
-                st.session_state.messages.append({"role": "System", "content": "Invalid location format. Please enter latitude, longitude."})
-                return
-            # เรียกใช้ฟังก์ชัน process_user_query จาก function_api.py
-            prompt = f"""
-            คำค้นหาผู้ใช้ : {search_query}
-            ตำแหน่ง : {user_lat},{user_lon}
-            รัศมี : {radius}
-            """
-            get_tool = create_tool()
-            llm_with_tool = llm.bind_tools(get_tool)
-            tools = llm_with_tool.invoke(prompt)
-            tool_call_data = tools.tool_calls
+                # แยกตำแหน่งจากข้อความ (เช่น "14.022788, 99.978337" เป็น tuple (14.022788, 99.978337))
+                try:
+                    user_lat, user_lon = map(float, user_location.split(","))
+                except ValueError:
+                    st.session_state.messages.append({"role": "System", "content": "Invalid location format. Please enter latitude, longitude."})
+                    return
+                # เรียกใช้ฟังก์ชัน process_user_query จาก function_api.py
+                prompt = f"""
+                คำค้นหาผู้ใช้ : {search_query}
+                ตำแหน่ง : {user_lat},{user_lon}
+                รัศมี : {radius}
+                """
+                get_tool = create_tool()
+                llm_with_tool = llm.bind_tools(get_tool)
+                tools = llm_with_tool.invoke(prompt)
+                tool_call_data = tools.tool_calls
 
-            if tool_call_data[0]['name'] == "query_place":
-                keyword, places_from_api = process_user_query(search_query, (user_lat, user_lon), radius)
-            else:
-                pass
-            if keyword:
-                system_reply = f"Found places matching your search query: '{keyword}' within {radius} km of {user_location}."
-                # แสดงแผนที่และสถานที่
-                create_and_display_map(places_from_api, (user_lat, user_lon))  # ใช้ create_and_display_map แทน display_places_map
-                # แสดงรายชื่อสถานที่
-                display_places_list(places_from_api)
-                # เรียกฟังก์ชันแนะนำสถานที่
-                display_recommendations(places_from_api, user_query=search_query)
-            else:
-                system_reply = f"No places found matching your search query: '{search_query}' within {radius} km of {user_location}."
-            
-            # เก็บข้อความตอบกลับจากระบบ
-            st.session_state.messages.append({"role": "System", "content": system_reply})
-            st.write(system_reply)
-        
+                if tool_call_data[0]['name'] == "query_place":
+                    keyword, places_from_api = process_user_query(search_query, (user_lat, user_lon), radius)
+                else:
+                    pass
+                if keyword:
+                    system_reply = f"Found places matching your search query: '{keyword}' within {radius} km of {user_location}."
+                    # แสดงแผนที่และสถานที่
+                    create_and_display_map(places_from_api, (user_lat, user_lon))  # ใช้ create_and_display_map แทน display_places_map
+                    # แสดงรายชื่อสถานที่
+                    display_places_list(places_from_api)
+                    # เรียกฟังก์ชันแนะนำสถานที่
+                    display_recommendations(places_from_api, user_query=search_query)
+                else:
+                    system_reply = f"No places found matching your search query: '{search_query}' within {radius} km of {user_location}."
+                
+                # เก็บข้อความตอบกลับจากระบบ
+                st.session_state.messages.append({"role": "System", "content": system_reply})
+                st.write(system_reply)
+
+            elif question_type == "route":
+                    # ตรวจสอบค่าต่างๆ ว่ามีหรือไม่
+                    if not user_location or not radius or not search_query or not user_destination:
+                        st.session_state.messages.append({"role": "System", "content": "Please provide valid inputs for location, radius, search query, and destination."})
+                        return
+                    
+                    # เก็บข้อความจากผู้ใช้
+                    user_message = f"Location: {user_location}, Radius: {radius} km, Search Query: {search_query}, Destination: {user_destination}"
+                    st.session_state.messages.append({"role": "User", "content": user_message})
+
+                    # แยกตำแหน่งจากข้อความ (เช่น "14.022788, 99.978337" เป็น tuple (14.022788, 99.978337))
+                    try:
+                        user_lat, user_lon = map(float, user_location.split(","))
+                        destination_lat, destination_lon = map(float, user_destination.split(","))
+                    except ValueError:
+                        st.session_state.messages.append({"role": "System", "content": "Invalid location or destination format. Please enter latitude, longitude."})
+                        return
+
+                    # เรียกใช้ฟังก์ชัน find_route สำหรับการค้นหาเส้นทางและสถานที่ที่น่าสนใจ
+                    route_data, places_of_interest = find_route(places_interest, (user_lat, user_lon), (destination_lat, destination_lon), radius)
+                    
+                    if not route_data or not places_of_interest:
+                        system_reply = f"No route or places of interest found matching your search query: '{search_query}' within {radius} km of {user_location}."
+                        st.session_state.messages.append({"role": "System", "content": system_reply})
+                        st.write(system_reply)
+                    else:
+                        system_reply = f"Found route and places of interest matching your search query: '{search_query}' within {radius} km of {user_location}."
+                        st.session_state.messages.append({"role": "System", "content": system_reply})
+                        st.write(system_reply)
+                    
 # เรียกใช้ฟังก์ชัน chat_with_api ใน Streamlit
 if __name__ == "__main__":
     chat_with_api()

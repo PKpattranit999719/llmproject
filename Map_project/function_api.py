@@ -1,3 +1,4 @@
+import json
 import requests
 import re
 from langchain_openai import ChatOpenAI
@@ -5,12 +6,10 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from pydantic import BaseModel, Field
 import folium
-import ipywidgets as widgets
-from IPython.display import display
 import streamlit as st
 from streamlit.components.v1 import html
 from langchain_core.tools import StructuredTool
-#from function_routes import convert_locations, get_places_from_route, process_places_of_interest_routes, sort_points, create_map
+from function_routes import DisplayMap, convert_locations, display_route_explanation, explain_route_with_llm, get_route_data, get_route_path_from_id, process_places_of_interest_routes, recommend_places, search_places_of_interest
 
 # กำหนดค่า API และ URL สำหรับการเชื่อมต่อ LLM
 url = 'http://111.223.37.52/v1'
@@ -90,24 +89,69 @@ def process_user_query(user_query, user_location, radius):
             return None, "Unable to clean keyword or no places found."
     return None, "No event data returned from LLM."
 
-def find_route(places_interest,user_location,user_destination,radius):
+def find_route(places_interest, user_location, user_destination, radius):
+    # ตรวจสอบว่า keyword มีค่าหรือไม่
+    keyword = process_places_of_interest_routes(places_interest)
+    if not keyword:
+        return None  # จัดการกรณีที่ไม่มีคำหลัก
     
-    # keyword = process_places_of_interest_routes(places_of_interest)
-    # if not keyword:
-    #     return None  # จัดการกรณีที่ไม่มีคำหลัก
-    
-    # flon, flat, tlon, tlat = convert_locations(user_location, user_destination)
-    # route_data, places_of_interest = get_places_from_route(flon, flat, tlon, tlat, keyword, radius)
-    
-    # if not route_data:
-    #     return None  # จัดการกรณีไม่สามารถดึงข้อมูลเส้นทางได้
-    
-    # # จากนั้นคุณสามารถเรียงลำดับจุดเส้นทางตามระยะทางหรือเกณฑ์อื่น
-    # sorted_route_points = sort_points([place['coordinates'] for place in places_of_interest], user_location)
-    
-    # # แสดงผลเส้นทางและสถานที่บนแผนที่
-    # create_map(route_data, places_of_interest, user_location, user_destination, sorted_route_points)
-    return 
+    # แปลงพิกัดเริ่มต้นและปลายทาง
+    flon, flat, tlon, tlat = convert_locations(user_location, user_destination)
+
+    # 1. ดึงข้อมูลเส้นทางจากจุดเริ่มต้นและจุดหมายปลายทาง
+    route_data = get_route_data(flon, flat, tlon, tlat)
+    if not route_data:
+        return None  # ถ้าไม่สามารถดึงข้อมูลเส้นทางได้
+
+    # 2. ใช้ข้อมูล route_data ไปหาเส้นทางโดยใช้ ID
+    if route_data and 'data' in route_data:
+        route_id = route_data['data'][0]['id']
+        route_path_list = get_route_path_from_id(route_id)
+
+        # 3. ค้นหาสถานที่ที่น่าสนใจจากเส้นทาง
+        places_of_interest = search_places_of_interest(route_path_list, keyword, radius)
+        if not places_of_interest:
+            return None  # ถ้าไม่พบสถานที่ที่น่าสนใจ
+
+        # 4. สร้างข้อมูลแผนที่
+        route_markers = [
+            { "lon": flon, "lat": flat, "title": "จุดเริ่มต้น"  },
+            { "lon": tlon, "lat": tlat, "title": "จุดปลายทาง" }
+        ]
+        
+        poi_markers = []
+        seen = set()
+
+        # กรองสถานที่ที่ไม่ซ้ำกัน
+        for place in places_of_interest:
+            key = (place["place_lon"], place["place_lat"], place["place_name"])
+            if key not in seen:
+                seen.add(key)
+                poi_markers.append({"lon": place["place_lon"], "lat": place["place_lat"], "title": place["place_name"]})
+
+        # แปลงเป็น JSON
+        poi_markers_js = json.dumps(poi_markers, ensure_ascii=False)
+        route_markers_js = json.dumps(route_markers, ensure_ascii=False)
+
+        # 5. แสดงแผนที่
+        DisplayMap(poi_markers_js, route_markers_js)
+
+        # 6. แสดงคำอธิบายเส้นทางการเดินทาง
+        explanation = explain_route_with_llm(route_data)
+        with st.expander("🗺️ คำอธิบายเส้นทางจาก LLM"):
+            st.write(f"LLM Explanation: {explanation}")
+            display_route_explanation(explanation)
+
+        # 7. แนะนำสถานที่ด้วย LLM
+        recommendations = recommend_places(poi_markers, places_of_interest, keyword)
+        with st.expander("📍 คำแนะนำสถานที่ที่ดีที่สุดจากเส้นทาง"):
+            st.write("นี่คือสถานที่ที่แนะนำตามเส้นทางของคุณ:")
+            st.markdown(recommendations)
+
+    else:
+        return None  # ถ้าไม่มีข้อมูลเส้นทาง
+
+    return route_data, places_of_interest  # คืนค่าเส้นทางและสถานที่ที่น่าสนใจ
 
 def create_tool():
     keep = []
@@ -247,12 +291,32 @@ def display_recommendations(places_data, user_query=None):
     except Exception as e:
         st.error(f"เกิดข้อผิดพลาดในการวิเคราะห์ข้อมูล: {str(e)}")
 
-# ฟังก์ชันหลักสำหรับการค้นหาและแสดงผล
-def main(user_query, user_location, radius):
+# # ฟังก์ชันหลักสำหรับการค้นหาและแสดงผล
+# def main(user_query, user_location, radius):
+#     keyword, places_from_api = process_user_query(user_query, user_location, radius)
+#     if keyword:
+#         # print(f"คำค้นหา: {keyword}")
+#         display_places_list(places_from_api)
+#         create_and_display_map(places_from_api, user_location)
+#     else:
+#         print("ไม่พบคำสำคัญจากการประมวลผล")
+def main(user_query, user_location, radius, user_destination=None, places_interest=None):
     keyword, places_from_api = process_user_query(user_query, user_location, radius)
+    
     if keyword:
-        # print(f"คำค้นหา: {keyword}")
+        # แสดงสถานที่จาก API
         display_places_list(places_from_api)
         create_and_display_map(places_from_api, user_location)
+        
+        # ถ้าผู้ใช้มีสถานที่สนใจและปลายทาง ให้เรียกฟังก์ชัน find_route
+        if places_interest and user_destination:
+            route_data, places_of_interest = find_route(places_interest, user_location, user_destination, radius)
+            if route_data:
+                # สามารถแสดงรายละเอียดเส้นทางและสถานที่ได้ตามที่ต้องการ
+                st.write("แสดงผลเส้นทางและสถานที่ที่น่าสนใจ:")
+                st.write(route_data)
+                st.write(places_of_interest)
+            else:
+                st.write("ไม่สามารถหาเส้นทางได้")
     else:
         print("ไม่พบคำสำคัญจากการประมวลผล")

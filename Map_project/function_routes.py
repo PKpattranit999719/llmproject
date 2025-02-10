@@ -1,6 +1,5 @@
 import math
 import time
-from turtle import st
 import streamlit as st
 import requests
 import urllib.parse
@@ -8,12 +7,8 @@ from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import JsonOutputParser
 from pydantic import BaseModel
-import folium
-from geopy.distance import geodesic
-from IPython.display import display
 import streamlit.components.v1 as components 
-import heapq
-import json
+
 
 # Define a model for keyword extraction
 class SearchKeyword(BaseModel):

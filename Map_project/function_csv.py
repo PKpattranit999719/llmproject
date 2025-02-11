@@ -1,4 +1,5 @@
 # Import Modules
+from turtle import st
 from langchain_openai import ChatOpenAI
 import pandas as pd
 from geopy.distance import geodesic
@@ -120,16 +121,21 @@ def generate_recommendation(llm, df):
 
 # Main Execution Example
 if __name__ == "__main__":
-    # Configurations - รับค่าจากไฟล์ function_CSV
-    function_csv_path = 'function_CSV.csv'  # Path ของไฟล์ function_CSV
-    function_df = pd.read_csv(function_csv_path)
-
+    # ตรวจสอบว่าไฟล์มีการอัปโหลดหรือยัง
+    uploaded_file = st.file_uploader("Upload CSV file", type="csv")
+    
+    # ถ้าอัปโหลดไฟล์ใหม่ ใช้ไฟล์ที่อัปโหลด
+    if uploaded_file is not None:
+        df = pd.read_csv(uploaded_file)
+        function_df = pd.read_csv(uploaded_file)  # ใช้ไฟล์ที่อัปโหลดเป็น function_CSV
+    else:
+        # ถ้าไม่มีการอัปโหลด ให้ใช้ไฟล์ function_CSV.csv และ splitData.csv
+        df = load_data("splitData.csv")
+        function_df = pd.read_csv('function_CSV.csv')  # โหลด function_CSV.csv ที่มีในโค้ด
+    
     user_location = (function_df.loc[0, 'user_lat'], function_df.loc[0, 'user_lon'])  # พิกัดของผู้ใช้
     radius = function_df.loc[0, 'radius']  # รัศมี
     user_query = function_df.loc[0, 'user_query']  # คำถามของผู้ใช้
-
-    # Load data
-    df = load_data("splitData.csv")
 
     # Filter by distance
     sorted_filtered_df = filter_data_by_distance(df, user_location, radius)

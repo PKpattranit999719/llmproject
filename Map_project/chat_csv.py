@@ -210,8 +210,10 @@ def chat_with_csv():
                     # แยกตำแหน่งจากข้อความ (เช่น "14.022788, 99.978337" เป็น tuple (14.022788, 99.978337))
                     user_lat, user_lon = map(float, user_location.split(","))
 
-                    # โหลดข้อมูลจากไฟล์ CSV
-                    df = load_data("C:/llmproject/Map_project/splitData.csv")
+                    if "uploaded_df" in st.session_state:
+                        df = st.session_state["uploaded_df"]  # ใช้ข้อมูลจากไฟล์ที่อัปโหลด
+                    else:
+                        df = load_data("C:/llmproject/Map_project/splitData.csv")  # ใช้ไฟล์เดิมหากไม่มีการอัปโหลด
 
                     # กรองข้อมูลตามระยะทาง
                     sorted_filtered_df = filter_data_by_distance(df, (user_lat, user_lon), radius)
@@ -219,22 +221,6 @@ def chat_with_csv():
                     # กรองข้อมูลด้วยคำค้นหาจากผู้ใช้
                     unique_attr_sub_types = sorted_filtered_df['ATTR_SUB_TYPE_TH'].drop_duplicates().tolist()
                     filtered_df = filter_data_by_categories(llm, search_query, unique_attr_sub_types, sorted_filtered_df)
-
-                #     # ถ้ามีข้อมูลที่กรองแล้ว
-                #     if not filtered_df.empty:
-                #         system_reply = f"Found {len(filtered_df)} places matching your search query: {search_query} within {radius} km of {user_location}."
-                        
-                #         # แสดงแผนที่ทั้งหมด
-                #         create_and_display_map(filtered_df, user_location=(user_lat, user_lon))
-
-                #         # แสดงคำแนะนำ
-                #         recommendation = generate_recommendation(llm, filtered_df.head(5))  # เรียกใช้ฟังก์ชันจาก function_csv.py
-                #         st.write("**Recommendation for places to visit:**")
-                #         st.write(recommendation)
-                #     else:
-                #         system_reply = f"No places found matching your search query: {search_query} within {radius} km of {user_location}."
-                # else:
-                #     system_reply = "Please provide valid inputs for location, radius, and search query."
 
                 # ถ้ามีข้อมูลที่กรองแล้ว
                 if not filtered_df.empty:

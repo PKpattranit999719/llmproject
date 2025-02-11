@@ -132,7 +132,7 @@ def chat_with_csv():
                     else:
                         st.warning("Please enter a location to search.")
                 
-            radius = st.number_input("Enter the search radius (in kilometers):", min_value=1, max_value=100, value=10, key="radius_input")
+            radius = st.number_input("Enter the search radius (in meter):", min_value=1, max_value=200, value=150, key="radius_input")
             search_query = st.text_input("Enter your search query (e.g., 'อยากเดินทางจากพระราม9ไปวัดพระแก้ว', 'จากกรุงเทพไปกำแพงแสน'):", value=user_query, key="search_input")
             places_interest = st.text_input("Enter your place interest(สถานที่ที่อยากแวะ หรือ สนใจระหว่างทาง e.g.'ต้องการทานข้าวหรือแวะพักทานอาหาร')", key="places_interest")
             

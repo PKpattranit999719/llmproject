@@ -129,6 +129,7 @@ def find_route(places_interest, user_location, user_destination, radius):
 
         # 6. แสดงคำอธิบายเส้นทางการเดินทาง
         explanation = explain_route_with_llm(route_data)
+        st.subheader("Recommendation route:")
         with st.expander("🗺️ คำอธิบายเส้นทางจาก LLM"):
             # แสดงคำอธิบายการเดินทางโดยใช้ st.markdown กับการอนุญาต HTML
             st.markdown(f"""
@@ -142,6 +143,7 @@ def find_route(places_interest, user_location, user_destination, radius):
 
         # 7. แนะนำสถานที่ด้วย LLM
         recommendations = recommend_places(places_of_interest, keyword)
+        st.subheader("Recommended places of interest:")
         with st.expander("📍 คำแนะนำสถานที่ที่ดีที่สุดจากเส้นทาง"):
             st.write("นี่คือสถานที่ที่แนะนำตามเส้นทางของคุณ:")
             st.markdown(recommendations)

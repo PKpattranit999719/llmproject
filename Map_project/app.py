@@ -15,40 +15,6 @@ if 'started' not in st.session_state:
 # เพิ่ม title หลัก
 st.title("SmartMap AI")
 
-# # เพิ่มตัวเลือกการเลือกภาษา กรณีให้ทุกหน้าเปลี่ยนภาษาได้
-# language = st.selectbox("Choose Language", options=["English", "Thai"])
-
-# # เมนู Sidebar
-# if st.session_state.started:
-#     st.sidebar.title("Main Menu")
-
-#     # เมนูหลัก
-#     menu = st.sidebar.selectbox(
-#         "Navigate",
-#         options=["Home", "CSV", "API"]
-#     )
-
-#     if menu == "Home":
-#         st.session_state.page = "home"
-#     elif menu == "CSV":
-#         csv_option = st.sidebar.selectbox(
-#             "Choose CSV Option",
-#             options=["Upload CSV", "Chat with CSV"]
-#         )
-#         if csv_option == "Upload CSV":
-#             st.session_state.page = "upload_csv"
-#         elif csv_option == "Chat with CSV":
-#             st.session_state.page = "chat_csv"
-#     elif menu == "API":
-#         csv_option = st.sidebar.selectbox(
-#             "Choose API Option",
-#             options=["API KEY", "Chat with API"]
-#         )
-#         if csv_option == "API KEY":
-#             st.session_state.page = "upload_api"
-#         elif csv_option == "Chat with API":
-#             st.session_state.page = "chat_api"
-
 if "page" not in st.session_state:
     st.session_state.page = "home"
 

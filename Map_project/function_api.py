@@ -43,6 +43,7 @@ def search_logdo_map_api(keyword, user_location, radius):
         'lat': lat,  # ส่งพิกัดที่อยู่
         'lon': lon,
         'span': radius,  # ระยะรัศมี
+        'dataset': 'osmpnt',
         'locale': 'th',
         'key': '7b6f8a4c53a57fa8315fbdcf5b108c83'  # ใส่ API Key logdo mapที่ถูกต้อง
     }

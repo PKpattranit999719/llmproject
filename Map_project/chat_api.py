@@ -244,7 +244,7 @@ def chat_with_api():
                 
                 # เก็บข้อความตอบกลับจากระบบ
                 st.session_state.messages.append({"role": "System", "content": system_reply})
-                st.write(system_reply)
+                #st.write(system_reply)
 
             elif question_type == "route":
                 # ตรวจสอบค่าต่างๆ ว่ามีหรือไม่

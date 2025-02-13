@@ -123,6 +123,7 @@ def search_interest_logdo_map_api(keyword, location, radius):
             'lon': location[1],
             'lat': location[0],
             'span': '150m',
+            'dataset': 'osmpnt',
             'keyword': keyword
     }
 

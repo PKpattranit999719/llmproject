@@ -226,7 +226,7 @@ def chat_with_csv():
                 if not filtered_df.empty:
                     system_reply = f"Found {len(filtered_df)} places matching your search query: {search_query} within {radius} km of {user_location}."
                     st.session_state.messages.append({"role": "System", "content": system_reply})
-                    st.write(system_reply)
+                    #st.write(system_reply)
 
                     # แสดงแผนที่ทั้งหมด
                     create_and_display_map(filtered_df, user_location=(user_lat, user_lon))

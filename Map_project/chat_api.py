@@ -5,14 +5,16 @@ import urllib.parse
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 import re
- 
-url = 'http://111.223.37.52/v1'
-api_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Im9yZ2FuaXphdGlvbl9pZCI6IjY3NjhkNzA3YjNiYmM5MWQwYWNjMWNjNCIsInRva2VuX25hbWUiOiJCYW5rIiwic3RkRGF0ZSI6IjIwMjUtMDEtMTlUMTc6MDA6MDAuMDAwWiJ9LCJpYXQiOjE3MzczNTkxMDcsImV4cCI6MTc0MDU4OTE5OX0.7peNsGJSnQL2tctiui3MXTBc5OZsLv8OSizh68KVH5w'
+import os
+from dotenv import load_dotenv
+
+# โหลดค่าจากไฟล์ .env
+load_dotenv()
 
 llm = ChatOpenAI(
     model='gpt-4o-mini',
-    base_url=url,  
-    api_key=api_key,  
+    base_url= os.getenv("url"),  
+    api_key= os.getenv("api_key"),  
     max_tokens=1000  
 )
 
@@ -64,7 +66,7 @@ def chat_with_api():
     for message in st.session_state.messages:
         st.write(f"**{message['role']}**: {message['content']}")
 
-    user_query = st.text_input("กรุณากรอกคำถามของคุณ:")
+    user_query = st.text_input("กรุณากรอกคำถามของคุณ: (e.g. 'อยากเดินทางจากพระราม9ไปพัทยา', 'ช่วยแนะนำแหล่งท่องเที่ยวทางประวัติศาสตร์แถวนี้')")
 
     if user_query:
         # ใช้ LLM ในการแยกประเภทคำถาม
@@ -253,7 +255,7 @@ def chat_with_api():
                     return
                 
                 # เก็บข้อความจากผู้ใช้
-                user_message = f"Location: {user_location}, Radius: {radius} km, Search Query: {search_query}, Destination: {user_destination}"
+                user_message = f"Location: {user_location}, Radius: {radius} m, Search Query: {search_query}, Destination: {user_destination}"
                 st.session_state.messages.append({"role": "User", "content": user_message})
 
                 # แยกตำแหน่งจากข้อความ (เช่น "14.022788, 99.978337" เป็น tuple (14.022788, 99.978337))
@@ -284,15 +286,15 @@ def chat_with_api():
                         if not route_data or not places_of_interest:
                             system_reply = f"No route or places of interest found matching your search query: '{search_query}' within {radius} km of {user_location}."
                             st.session_state.messages.append({"role": "System", "content": system_reply})
-                            st.write(system_reply)
+                            #st.write(system_reply)
                         else:
                             system_reply = f"Found route and places of interest matching your search query: '{search_query}' within {radius} km of {user_location}."
                             st.session_state.messages.append({"role": "System", "content": system_reply})
-                            st.write(system_reply)
+                            #st.write(system_reply)
                     else:
                         system_reply = "Unable to find a valid route or places of interest."
                         st.session_state.messages.append({"role": "System", "content": system_reply})
-                        st.write(system_reply)
+                        #st.write(system_reply)
                         
 # เรียกใช้ฟังก์ชัน chat_with_api ใน Streamlit
 if __name__ == "__main__":

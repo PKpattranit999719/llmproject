@@ -10,15 +10,16 @@ import streamlit as st
 from streamlit.components.v1 import html
 from langchain_core.tools import StructuredTool
 from function_routes import DisplayMap, convert_locations, display_route_explanation, explain_route_with_llm, get_route_data, get_route_path_from_id, process_places_of_interest_routes, recommend_places, search_places_of_interest
+import os
+from dotenv import load_dotenv
 
-# กำหนดค่า API และ URL สำหรับการเชื่อมต่อ LLM
-url = 'http://111.223.37.52/v1'
-api_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Im9yZ2FuaXphdGlvbl9pZCI6IjY3NjhkNzA3YjNiYmM5MWQwYWNjMWNjNCIsInRva2VuX25hbWUiOiJCYW5rIiwic3RkRGF0ZSI6IjIwMjUtMDEtMTlUMTc6MDA6MDAuMDAwWiJ9LCJpYXQiOjE3MzczNTkxMDcsImV4cCI6MTc0MDU4OTE5OX0.7peNsGJSnQL2tctiui3MXTBc5OZsLv8OSizh68KVH5w'
+# โหลดค่าจากไฟล์ .env
+load_dotenv()
 
 llm = ChatOpenAI(
     model='gpt-4o-mini',
-    base_url=url,  
-    api_key=api_key,  
+    base_url= os.getenv("url"),  
+    api_key= os.getenv("api_key"),  
     max_tokens=1000  
 )
 
@@ -45,7 +46,7 @@ def search_logdo_map_api(keyword, user_location, radius):
         'span': radius,  # ระยะรัศมี
         'dataset': 'osmpnt',
         'locale': 'th',
-        'key': '7b6f8a4c53a57fa8315fbdcf5b108c83'  # ใส่ API Key logdo mapที่ถูกต้อง
+        'key': os.getenv("key_longdo")  # ใส่ API Key logdo mapที่ถูกต้อง
     }
 
     response = requests.get(base_url, params=params)
@@ -71,9 +72,27 @@ def process_user_query(user_query, user_location, radius):
     parser = JsonOutputParser(pydantic_object=SearchKeyword)
     prompt = PromptTemplate(
         template="""## คุณมีหน้าที่กรองคำสำคัญจากคำขอผู้ใช้.
-        # คำขอผู้ใช้: {user_query}
-        # Your response should be structured as follows:
-        {format_instructions}""",
+           คำขอของผู้ใช้: {user_query}
+            ### กฎสำหรับการกรองคำสำคัญ:
+            - คำสำคัญต้องสื่อถึงหมวดหมู่หรือสถานที่ที่ต้องการค้นหา (เช่น "ร้านกาแฟ", "โรงแรม", "ร้านอาหารไทย", "โรงเรียน")
+            - หลีกเลี่ยงคำทั่วไป เช่น "ช่วยหา", "ฉันต้องการ", "มีที่ไหนบ้าง" ฯลฯ
+            - หากคำขอเกี่ยวข้องกับศาสนา แยกประเภทให้ชัดเจน:
+                - "วัด" ใช้สำหรับสถานที่ทางพุทธศาสนา เช่น วัดพระแก้ว, วัดอรุณ
+                - "โบสถ์" ใช้สำหรับสถานที่ทางคริสต์ศาสนา เช่น โบสถ์อัสสัมชัญ, โบสถ์เซนต์หลุยส์
+                - "เทวสถาน" ใช้สำหรับสถานที่ที่เกี่ยวข้องกับศาสนาฮินดูหรือศาสนาอื่น เช่น ศาลพระพรหม, วัดแขกสีลม
+            - ถ้าคำขอไม่มีคำสำคัญ ให้คืนค่าเป็น `null`
+
+            ### ตัวอย่าง:
+            - คำขอ: "แนะนำร้านกาแฟที่วิวสวยใกล้ฉันหน่อย" → คำสำคัญ: "ร้านกาแฟ"
+            - คำขอ: "มีร้านอาหารญี่ปุ่นที่ดีในกรุงเทพไหม?" → คำสำคัญ: "ร้านอาหารญี่ปุ่น"
+            - คำขอ: "ฉันอยากไปเที่ยวทะเล" → คำสำคัญ: "ทะเล"
+            - คำขอ: "ฉันอยากไปวัดพระแก้ว" → คำสำคัญ: "วัด"
+            - คำขอ: "ขอพิกัดโบสถ์คริสต์ที่สวยในกรุงเทพ" → คำสำคัญ: "โบสถ์"
+            - คำขอ: "อยากไหว้พระพรหมที่สีลม" → คำสำคัญ: "เทวสถาน"
+
+            ### ผลลัพธ์ที่ต้องการ (JSON Format):
+            {format_instructions}
+            """,
         input_variables=["user_query"],
         partial_variables={"format_instructions": parser.get_format_instructions()},
     )

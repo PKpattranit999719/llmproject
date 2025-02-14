@@ -11,19 +11,21 @@ from pydantic import BaseModel, Field
 import streamlit.components.v1 as components 
 from datetime import datetime
 import pytz 
+import os
+from dotenv import load_dotenv
 
 # Define a model for keyword extraction
 class SearchKeyword(BaseModel):
     keyword: str
 
-# Initialize LLM with centralized server configuration
-url = 'http://111.223.37.52/v1'
-api_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Im9yZ2FuaXphdGlvbl9pZCI6IjY3NjhkNzA3YjNiYmM5MWQwYWNjMWNjNCIsInRva2VuX25hbWUiOiJCYW5rIiwic3RkRGF0ZSI6IjIwMjUtMDEtMTlUMTc6MDA6MDAuMDAwWiJ9LCJpYXQiOjE3MzczNTkxMDcsImV4cCI6MTc0MDU4OTE5OX0.7peNsGJSnQL2tctiui3MXTBc5OZsLv8OSizh68KVH5w'
+# โหลดค่าจากไฟล์ .env
+load_dotenv()
 
 llm = ChatOpenAI(
-    model="gpt-4o-mini",
-    base_url=url,
-    api_key=api_key,
+    model='gpt-4o-mini',
+    base_url= os.getenv("url"),  
+    api_key= os.getenv("api_key"),  
+    max_tokens=1000  
 )
 
 def clean_keyword(keyword: str):
@@ -88,7 +90,7 @@ def get_route_data(flon, flat, tlon, tlat):
     try:
         base_url = "https://api.longdo.com/RouteService/json/route/guide?"
         params = {
-            'key': '7b6f8a4c53a57fa8315fbdcf5b108c83',
+            'key': os.getenv("key_longdo"),
             'flon': flon,
             'flat': flat,
             'tlon': tlon,
@@ -119,7 +121,7 @@ def search_interest_logdo_map_api(keyword, location, radius):
     try:
         base_url = "https://search.longdo.com/mapsearch/json/search"
         params = {
-            'key': '7b6f8a4c53a57fa8315fbdcf5b108c83',
+            'key': os.getenv("key_longdo"),
             'lon': location[1],
             'lat': location[0],
             'span': '150m',

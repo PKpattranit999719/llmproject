@@ -1,6 +1,6 @@
 import streamlit as st
 from function_api import find_route
-from function_csv import load_data, filter_data_by_distance, filter_data_by_categories, generate_recommendation, create_and_display_map  # Import ฟังก์ชันจากไฟล์ function_csv
+from function_csv import load_data, filter_data_by_distance, filter_data_by_categories, generate_recommendation, create_and_display_map # Import ฟังก์ชันจากไฟล์ function_csv
 from langchain_openai import ChatOpenAI
 import requests
 import urllib.parse
@@ -263,7 +263,7 @@ def chat_with_csv():
                     system_reply = f"No places found matching your search query: {search_query} within {radius} km of {user_location}."
                     st.session_state.messages.append({"role": "System", "content": system_reply})
                     #st.write(system_reply)
-               
+      
             elif question_type == "route":
                 # ตรวจสอบค่าต่างๆ ว่ามีหรือไม่
                 if not user_location or not radius or not search_query or not user_destination:
